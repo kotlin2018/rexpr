@@ -7,6 +7,7 @@ members = [
 [package]
 name = "rexpr"
 version = "1.0.0"
+description = "Rust Json Object access Runtime"
 authors = ["zhuxiujie <zhuxiujia@qq.com>"]
 edition = "2018"
 license = "Apache-2.0"
