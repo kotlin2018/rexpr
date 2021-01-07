@@ -1,4 +1,4 @@
-use std::fmt::{Display, Error, Formatter};
+use std::fmt::{Display, Formatter};
 use serde::Deserialize;
 use serde::Serialize;
 use serde_json::{Value};
@@ -8,6 +8,7 @@ use crate::ast::NodeType::{NBinary, NArg, NNull, NString, NNumber, NOpt, NBool};
 use crate::access::AccessField;
 use crate::eval::eval;
 use crate::token::TokenMap;
+use crate::error::Error;
 
 
 #[derive(Clone, PartialEq, Debug, Serialize, Deserialize)]
@@ -22,7 +23,7 @@ pub enum NodeType {
 }
 
 impl Display for NodeType {
-    fn fmt(&self, f: &mut Formatter) -> Result<(), Error> {
+    fn fmt(&self, f: &mut Formatter) -> std::fmt::Result {
         match self {
             NArg => f.write_str("NArg"),
             NString => f.write_str("NString"),
@@ -170,7 +171,7 @@ impl Node {
         }
     }
 
-    pub fn parse(data: &str, token: &TokenMap) -> Self {
+    pub fn parse(data: &str, token: &TokenMap) -> Result<Self,Error> {
         // println!("data={}", &data);
         let mut first_index = 0;
         let mut last_index = 0;
@@ -183,22 +184,25 @@ impl Node {
             last_index = data.rfind("`").unwrap_or_default();
         }
         if data == "" || data == "null" {
-            return Node::new_null();
+            return Ok(Node::new_null());
         } else if let Ok(n) = data.parse::<bool>() {
-            return Node::new_bool(n);
+            return Ok(Node::new_bool(n));
         } else if token.is_token(data) {
-            return Node::new_token(data);
+            return Ok(Node::new_token(data));
         } else if first_index == 0 && last_index == (data.len() - 1) && first_index != last_index {
             let new_str = data.replace("'", "").replace("`", "");
-            return Node::new_string(new_str.as_str());
+            return Ok(Node::new_string(new_str.as_str()));
         } else if let Ok(n) = data.parse::<f64>() {
             if data.find(".").unwrap_or(0) != 0 {
-                return Node::new_f64(n);
+                return Ok(Node::new_f64(n));
             } else {
-                return Node::new_i64(n as i64);
+                return Ok(Node::new_i64(n as i64));
             }
-        } else {
-            return Node::new_arg(data);
+        } else{
+            if data.contains(" "){
+                return Err(Error::from(format!("[rexpr] arg token not allow! token: {}",data)))
+            }
+            return Ok(Node::new_arg(data));
         }
     }
 }

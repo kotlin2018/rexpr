@@ -77,7 +77,7 @@ mod test {
     #[test]
     fn test_eval_arg() {
         let box_node = lexer::lexer_parse_node("-1 == -a", &TokenMap::new()).unwrap();
-        println!("{:#?}", box_node);
+        // println!("{:#?}", box_node);
         let john = json!({
     });
         let v = box_node.eval(&john).unwrap();
