@@ -1,15 +1,18 @@
 #[cfg(test)]
 mod test {
     use std::{thread, time};
+
     use serde_json::{json, Value};
 
-    use crate::lexer;
-    use crate::token::TokenMap;
     use crate::ast::Node;
     use crate::bencher::QPS;
+    use crate::lexer;
+    use crate::runtime::RExprRuntime;
+    use crate::token::TokenMap;
 
     #[test]
     fn test_node_run() {
+        let runtime = RExprRuntime::new();
         let arg = json!({
         "a":1,
         "b":2,
@@ -19,11 +22,9 @@ mod test {
         "f":[{"field":1}]
          });
         let exec_expr = |arg: &serde_json::Value, expr: &str| -> serde_json::Value{
-            println!("{}", expr.clone());
-            let box_node = lexer::lexer_parse_node(expr, &TokenMap::new()).unwrap();
-            //println!("{:#?}", &box_node);
-            let v = box_node.eval(arg).unwrap();
-            println!("'{}' -> {}", expr.clone(), &v);
+            println!("{}", expr);
+            let v = runtime.eval(expr, arg).unwrap();
+            println!("'{}' -> {}", expr, &v);
             v
         };
         assert_eq!(exec_expr(&arg, "-1 == -a"), json!(true));
