@@ -77,6 +77,7 @@ impl Node {
         }
     }
 
+    #[inline]
     pub fn eval(&self, env: &Value) -> Result<Value, crate::error::Error> {
         if self.equal_node_type(&NBinary) {
             let left_v = self.left.as_ref().unwrap().eval(env)?;

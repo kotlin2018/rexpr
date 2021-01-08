@@ -4,6 +4,7 @@ use serde_json::Value;
 use crate::error::Error;
 use crate::error::Result;
 
+#[inline]
 pub fn eval(left: &Value,
             right: &Value,
             op: &str) -> Result<Value> {
