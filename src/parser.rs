@@ -75,7 +75,7 @@ fn loop_parse_temp_node(tokens: &[String], token_map: &TokenMap, express: &str) 
             skip_start = index;
             skip_end = skip_start + (sub_tokens.len() - 1) as i32;
         } else {
-            let node = Node::parse(item.as_str(), token_map);
+            let node = Node::parse(item.as_str(), token_map)?;
             if node.node_type == NOpt {
                 let is_allow_token = token_map.is_allow_token(item.as_str());
                 if !is_allow_token {
@@ -102,7 +102,7 @@ fn to_binary_node(nodes: &mut Vec<Node>, token_map: &TokenMap, express: &str) ->
         return Ok(nodes[0].to_owned());
     }
     for item in token_map.priority_array() {
-        loop_replace_to_binary_node(token_map, express, &item, nodes);
+        loop_replace_to_binary_node(token_map, express, &item, nodes)?;
     }
     if nodes.len() > 0 {
         return Result::Ok(nodes[0].to_owned());
@@ -136,10 +136,10 @@ fn find_eq_end(arg: &[String], start: i32) -> i32 {
     return index;
 }
 
-fn loop_replace_to_binary_node(token_map: &TokenMap, express: &str, operator: &str, node_arg: &mut Vec<Node>) {
-    let node_arg_len = node_arg.len();
+fn loop_replace_to_binary_node(token_map: &TokenMap, express: &str, operator: &str, node_arg: &mut Vec<Node>) -> Result<(), Error> {
+    let mut node_arg_len = node_arg.len();
     if node_arg_len == 1 {
-        return;
+        return Ok(());
     }
     for index in 1..(node_arg_len - 1) {
         let item = node_arg.get(index).unwrap();
@@ -154,12 +154,20 @@ fn loop_replace_to_binary_node(token_map: &TokenMap, express: &str, operator: &s
             node_arg.remove(index);
             node_arg.remove(left_index);
             node_arg.insert(left_index, binary_node);
+            node_arg_len = node_arg.len();
+            if node_arg_len == 1 {
+                return Ok(());
+            }
+            if node_arg_len == 2 {
+                return Err(Error::from(format!("[rexpr] parse fail express: {} !", express)));
+            }
             if have_token(node_arg) {
                 loop_replace_to_binary_node(token_map, express, operator, node_arg);
-                return;
+                return Ok(());
             }
         }
     }
+    return Ok(());
 }
 
 fn have_token(node_arg: &Vec<Node>) -> bool {
