@@ -172,7 +172,7 @@ impl Node {
         }
     }
 
-    pub fn parse(data: &str, token: &TokenMap) -> Result<Self,Error> {
+    pub fn parse(data: &str, token: &TokenMap) -> Result<Self, Error> {
         // println!("data={}", &data);
         let mut first_index = 0;
         let mut last_index = 0;
@@ -191,19 +191,34 @@ impl Node {
         } else if token.is_token(data) {
             return Ok(Node::new_token(data));
         } else if first_index == 0 && last_index == (data.len() - 1) && first_index != last_index {
-            let new_str = data.replace("'", "").replace("`", "");
-            return Ok(Node::new_string(new_str.as_str()));
+            return Ok(Node::new_string(&data[1..last_index]));
         } else if let Ok(n) = data.parse::<f64>() {
             if data.find(".").unwrap_or(0) != 0 {
                 return Ok(Node::new_f64(n));
             } else {
                 return Ok(Node::new_i64(n as i64));
             }
-        } else{
-            if data.contains(" "){
-                return Err(Error::from(format!("[rexpr] arg token not allow! token: {}",data)))
+        } else {
+            if data.contains(" ") {
+                return Err(Error::from(format!("[rexpr] arg token not allow! token: {}", data)));
             }
             return Ok(Node::new_arg(data));
         }
+    }
+}
+
+#[cfg(test)]
+mod test {
+    use crate::ast::Node;
+    use crate::token::TokenMap;
+
+    #[test]
+    fn test_parse() {
+        let token_map = TokenMap::new();
+        let node = Node::parse("'123'", &token_map).unwrap();
+        assert_eq!(node.value.as_str().unwrap(), "123");
+
+        let node = Node::parse("'12\'\'3'", &token_map).unwrap();
+        assert_eq!(node.value.as_str().unwrap(), "12\'\'3");
     }
 }
