@@ -180,7 +180,7 @@ impl Node {
         } else if token.is_token(data) {
             return Ok(Node::new_token(data));
         } else if (data.starts_with("'") && data.ends_with("'")) || (data.starts_with("`") && data.ends_with("`")) {
-            return Ok(Node::new_string(&data[1..data.len()-1]));
+            return Ok(Node::new_string(&data[1..data.len() - 1]));
         } else if let Ok(n) = data.parse::<f64>() {
             if data.find(".").unwrap_or(0) != 0 {
                 return Ok(Node::new_f64(n));
@@ -188,11 +188,34 @@ impl Node {
                 return Ok(Node::new_i64(n as i64));
             }
         } else {
-            if data.contains(" ") {
+            if Self::is_arg(data) {
+                return Ok(Node::new_arg(data));
+            } else {
                 return Err(Error::from(format!("[rexpr] arg token not allow! token: {}", data)));
             }
-            return Ok(Node::new_arg(data));
         }
+    }
+
+    fn is_arg(arg: &str) -> bool {
+        for c in arg.chars() {
+            match c {
+                //a~z
+                'a' | 'b' | 'c' | 'd' | 'e' | 'f' | 'g' | 'h' | 'i' | 'j' | 'k' | 'l' | 'm' | 'n' | 'o' | 'p' | 'q' | 'r' | 's' | 't' | 'u' | 'v' | 'w' | 'x' | 'y' | 'z' |
+                //A~Z
+                'A' | 'B' | 'C' | 'D' | 'E' | 'F' | 'G' | 'H' | 'I' | 'J' | 'K' | 'L' | 'M' | 'N' | 'O' | 'P' | 'Q' | 'R' | 'S' | 'T' | 'U' | 'V' | 'W' | 'X' | 'Y' | 'Z' |
+                //0~9
+                '0' | '1' | '2' | '3' | '4' | '5' | '6' | '7' | '8' | '9' |
+                //_
+                '_'
+                => {
+                    //nothing to do
+                }
+                _ => {
+                    return false;
+                }
+            }
+        }
+        return true;
     }
 }
 
@@ -200,6 +223,7 @@ impl Node {
 mod test {
     use crate::ast::Node;
     use crate::token::TokenMap;
+    use crate::ast::NodeType::NArg;
 
     #[test]
     fn test_parse() {
@@ -209,5 +233,12 @@ mod test {
 
         let node = Node::parse("'12\'\'3'", &token_map).unwrap();
         assert_eq!(node.value.as_str().unwrap(), "12\'\'3");
+    }
+
+    #[test]
+    fn test_parse_arg() {
+        let token_map = TokenMap::new();
+        let node = Node::parse("test", &token_map).unwrap();
+        assert_eq!(node.node_type, NArg);
     }
 }
