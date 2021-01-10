@@ -179,7 +179,7 @@ impl Node {
             return Ok(Node::new_bool(n));
         } else if token.is_token(data) {
             return Ok(Node::new_token(data));
-        } else if (data.starts_with("'") && data.ends_with("'")) || data.starts_with("`") && data.ends_with("`") {
+        } else if (data.starts_with("'") && data.ends_with("'")) || (data.starts_with("`") && data.ends_with("`")) {
             return Ok(Node::new_string(&data[1..data.len()-1]));
         } else if let Ok(n) = data.parse::<f64>() {
             if data.find(".").unwrap_or(0) != 0 {
