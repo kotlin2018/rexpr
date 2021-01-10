@@ -8,7 +8,7 @@ use crate::parser::parse;
 ///lexer
 pub fn lexer(express: &str, token_map: &TokenMap) -> Result<Vec<String>, Error> {
     let express = express.replace("none", "null").replace("None", "null");
-    let mut tokens = parse_tokens(&express, token_map);
+    let mut tokens = parse_tokens(&express, token_map)?;
     loop_fill_lost_token(0, &mut tokens, token_map);
     return Ok(tokens);
 }
@@ -76,12 +76,12 @@ pub fn lexer_parse_node(express: &str, token_map: &TokenMap) -> Result<Node, Err
 }
 
 ///parse token to vec
-pub fn parse_tokens(s: &String, token_map: &TokenMap) -> Vec<String> {
+pub fn parse_tokens(s: &str, token_map: &TokenMap) -> Result<Vec<String>, Error> {
     let chars = s.chars();
     let chars_len = s.len() as i32;
     let mut result = LinkedList::new();
     //str
-    let mut find_str = false;
+    let mut is_find_str = false;
     let mut temp_str = String::new();
 
     //token
@@ -91,23 +91,23 @@ pub fn parse_tokens(s: &String, token_map: &TokenMap) -> Vec<String> {
         index = index + 1;
         let is_token = token_map.is_token(item.to_string().as_str());
         if item == '\'' || item == '`' {
-            if find_str {
+            if is_find_str {
                 //第二次找到
-                find_str = false;
+                is_find_str = false;
                 temp_str.push(item);
                 trim_push_back(&temp_str, &mut result);
                 temp_str.clear();
                 continue;
             }
-            find_str = true;
+            is_find_str = true;
             temp_str.push(item);
             continue;
         }
-        if find_str {
+        if is_find_str {
             temp_str.push(item);
             continue;
         }
-        if item != '`' && item != '\'' && is_token == false && !find_str {
+        if item != '`' && item != '\'' && is_token == false && !is_find_str {
             //need reset
             temp_arg.push(item);
             if (index + 1) == chars_len {
@@ -138,11 +138,14 @@ pub fn parse_tokens(s: &String, token_map: &TokenMap) -> Vec<String> {
             continue;
         }
     }
+    if is_find_str {
+        return Err(Error::from(format!("[rexpr] find string expr not end! express:{}", s)));
+    }
     let mut v = vec![];
     for item in result {
         v.push(item);
     }
-    return v;
+    return Ok(v);
 }
 
 fn trim_push_back(arg: &str, list: &mut LinkedList<String>) {
