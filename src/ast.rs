@@ -173,25 +173,14 @@ impl Node {
     }
 
     pub fn parse(data: &str, token: &TokenMap) -> Result<Self, Error> {
-        // println!("data={}", &data);
-        let mut first_index = 0;
-        let mut last_index = 0;
-        if data.rfind("'").unwrap_or(0) != 0 {
-            first_index = data.find("'").unwrap_or_default();
-            last_index = data.rfind("'").unwrap_or_default();
-        }
-        if data.rfind("`").unwrap_or(0) != 0 {
-            first_index = data.find("`").unwrap_or_default();
-            last_index = data.rfind("`").unwrap_or_default();
-        }
         if data == "" || data == "null" {
             return Ok(Node::new_null());
         } else if let Ok(n) = data.parse::<bool>() {
             return Ok(Node::new_bool(n));
         } else if token.is_token(data) {
             return Ok(Node::new_token(data));
-        } else if first_index == 0 && last_index == (data.len() - 1) && first_index != last_index {
-            return Ok(Node::new_string(&data[1..last_index]));
+        } else if (data.starts_with("'") && data.ends_with("'")) || data.starts_with("`") && data.ends_with("`") {
+            return Ok(Node::new_string(&data[1..data.len()-1]));
         } else if let Ok(n) = data.parse::<f64>() {
             if data.find(".").unwrap_or(0) != 0 {
                 return Ok(Node::new_f64(n));
