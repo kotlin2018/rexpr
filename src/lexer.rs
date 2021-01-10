@@ -197,6 +197,7 @@ mod test {
         assert_eq!(l, vec!["(", "null", "-", "1", ")", "-", "1", "-", "1", "-", "(", "null", "-", "1", ")"])
     }
 
+    //cargo test --release --package rexpr --lib lexer::test::test_bench_lexer --no-fail-fast -- --exact -Z unstable-options --show-output
     #[test]
     fn test_bench_lexer(){
         let token_map=TokenMap::new();
