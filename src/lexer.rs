@@ -159,7 +159,8 @@ fn trim_push_back(arg: &str, list: &mut LinkedList<String>) {
 #[cfg(test)]
 mod test {
     use crate::token::TokenMap;
-    use crate::lexer::lexer;
+    use crate::lexer::{lexer, parse_tokens};
+    use crate::bencher::QPS;
 
     #[test]
     fn test_fill() {
@@ -194,5 +195,16 @@ mod test {
         let l = lexer("-1 -1 -1 --1", &TokenMap::new()).unwrap();
         println!("{:?}", &l);
         assert_eq!(l, vec!["(", "null", "-", "1", ")", "-", "1", "-", "1", "-", "(", "null", "-", "1", ")"])
+    }
+
+    #[test]
+    fn test_bench_lexer(){
+        let token_map=TokenMap::new();
+        let now=std::time::Instant::now();
+        let total=1000000;
+        for _ in 0..total{
+           parse_tokens("1+1", &token_map).unwrap();
+        }
+        now.time(total);
     }
 }
