@@ -1,7 +1,7 @@
-use crate::token::TokenMap;
 use crate::ast::Node;
-use crate::error::Error;
 use crate::ast::NodeType::NOpt;
+use crate::error::Error;
+use crate::token::TokenMap;
 
 /// parse token to node
 pub fn parse(token_map: &TokenMap, tokens: &Vec<String>, express: &str) -> Result<Node, Error> {
@@ -23,13 +23,19 @@ fn check_tokens_open_close(tokens: &Vec<String>, express: &str) -> Result<(), Er
         }
     }
     if open_nums != close_nums {
-        return Err(Error::from(format!("[rexpr] py lexer find '(' num not equal ')' num,in express: '{}'", &express)));
+        return Err(Error::from(format!(
+            "[rexpr] py lexer find '(' num not equal ')' num,in express: '{}'",
+            &express
+        )));
     }
     Ok(())
 }
 
-
-fn loop_parse_temp_node(tokens: &[String], token_map: &TokenMap, express: &str) -> Result<Vec<Node>, Error> {
+fn loop_parse_temp_node(
+    tokens: &[String],
+    token_map: &TokenMap,
+    express: &str,
+) -> Result<Vec<Node>, Error> {
     let len = tokens.len();
     let mut result = vec![];
     let mut temp_nodes = vec![];
@@ -63,7 +69,10 @@ fn loop_parse_temp_node(tokens: &[String], token_map: &TokenMap, express: &str) 
                 if node.node_type == NOpt {
                     let is_allow_token = token_map.is_allow_token(item.as_str());
                     if !is_allow_token {
-                        return Err(Error::from(format!("[rexpr] py lexer find not support token: '{}' ,in express: '{}'", &item, &express)));
+                        return Err(Error::from(format!(
+                            "[rexpr] py lexer find not support token: '{}' ,in express: '{}'",
+                            &item, &express
+                        )));
                     }
                 }
                 if find_open {
@@ -79,7 +88,10 @@ fn loop_parse_temp_node(tokens: &[String], token_map: &TokenMap, express: &str) 
             if node.node_type == NOpt {
                 let is_allow_token = token_map.is_allow_token(item.as_str());
                 if !is_allow_token {
-                    return Err(Error::from(format!("[rexpr] py lexer find not support token: '{}' ,in express: '{}'", &item, &express)));
+                    return Err(Error::from(format!(
+                        "[rexpr] py lexer find not support token: '{}' ,in express: '{}'",
+                        &item, &express
+                    )));
                 }
             }
             if find_open {
@@ -92,11 +104,17 @@ fn loop_parse_temp_node(tokens: &[String], token_map: &TokenMap, express: &str) 
     return Ok(result);
 }
 
-
-fn to_binary_node(nodes: &mut Vec<Node>, token_map: &TokenMap, express: &str) -> Result<Node, Error> {
+fn to_binary_node(
+    nodes: &mut Vec<Node>,
+    token_map: &TokenMap,
+    express: &str,
+) -> Result<Node, Error> {
     let nodes_len = nodes.len();
     if nodes_len == 0 {
-        return Result::Err(crate::error::Error::from(format!("[rexpr] lexer express '{}' fail", express)));
+        return Result::Err(crate::error::Error::from(format!(
+            "[rexpr] lexer express '{}' fail",
+            express
+        )));
     }
     if nodes_len == 1 {
         return Ok(nodes[0].to_owned());
@@ -107,7 +125,10 @@ fn to_binary_node(nodes: &mut Vec<Node>, token_map: &TokenMap, express: &str) ->
     if nodes.len() > 0 {
         return Result::Ok(nodes[0].to_owned());
     } else {
-        return Result::Err(crate::error::Error::from(format!("[rexpr] lexer express '{}' fail", express)));
+        return Result::Err(crate::error::Error::from(format!(
+            "[rexpr] lexer express '{}' fail",
+            express
+        )));
     }
 }
 
@@ -136,7 +157,12 @@ fn find_eq_end(arg: &[String], start: i32) -> i32 {
     return index;
 }
 
-fn loop_replace_to_binary_node(token_map: &TokenMap, express: &str, operator: &str, node_arg: &mut Vec<Node>) -> Result<(), Error> {
+fn loop_replace_to_binary_node(
+    token_map: &TokenMap,
+    express: &str,
+    operator: &str,
+    node_arg: &mut Vec<Node>,
+) -> Result<(), Error> {
     let mut node_arg_len = node_arg.len();
     if node_arg_len == 1 {
         return Ok(());
@@ -159,7 +185,10 @@ fn loop_replace_to_binary_node(token_map: &TokenMap, express: &str, operator: &s
                 return Ok(());
             }
             if node_arg_len == 2 {
-                return Err(Error::from(format!("[rexpr] parse fail express: {} !", express)));
+                return Err(Error::from(format!(
+                    "[rexpr] parse fail express: {} !",
+                    express
+                )));
             }
             if have_token(node_arg) {
                 loop_replace_to_binary_node(token_map, express, operator, node_arg);

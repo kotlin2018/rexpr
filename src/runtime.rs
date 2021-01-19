@@ -1,9 +1,9 @@
-use serde_json::Value;
 use crate::ast::Node;
-use crate::token::TokenMap;
 use crate::lexer::lexer;
 use crate::parser::parse;
-use std::sync::{RwLock};
+use crate::token::TokenMap;
+use serde_json::Value;
+use std::sync::RwLock;
 /// the express engine for  exe code on runtime
 #[derive(Debug)]
 pub struct RExprRuntime {
@@ -25,7 +25,7 @@ impl RExprRuntime {
         match g {
             Ok(g) => {
                 let cached = g.get(expr);
-                if cached.is_none() {
+                return if cached.is_none() {
                     drop(cached);
                     drop(g);
                     let node = self.parse(expr)?;
@@ -35,11 +35,11 @@ impl RExprRuntime {
                         }
                         _ => {}
                     }
-                    return node.eval(arg);
+                    node.eval(arg)
                 } else {
                     let nodes = cached.unwrap();
-                    return nodes.eval(arg);
-                }
+                    nodes.eval(arg)
+                };
             }
             _ => {
                 let node = self.parse(expr)?;
@@ -49,7 +49,11 @@ impl RExprRuntime {
     }
 
     /// no cache mode to run engine
-    pub fn eval_no_cache(&self, lexer_arg: &str, arg: &Value) -> Result<Value, crate::error::Error> {
+    pub fn eval_no_cache(
+        &self,
+        lexer_arg: &str,
+        arg: &Value,
+    ) -> Result<Value, crate::error::Error> {
         let tokens = lexer(lexer_arg, &self.token_map)?;
         let node = parse(&self.token_map, &tokens, lexer_arg)?;
         return node.eval(arg);
@@ -63,14 +67,13 @@ impl RExprRuntime {
     }
 }
 
-
 #[cfg(test)]
 mod test {
-    use crate::runtime::RExprRuntime;
     use crate::bencher::QPS;
+    use crate::runtime::RExprRuntime;
+    use std::sync::Arc;
     use std::thread::{sleep, spawn};
     use std::time::Duration;
-    use std::sync::Arc;
 
     //cargo test --release --package rexpr --lib runtime::test::test_bench --no-fail-fast -- --exact -Z unstable-options --show-output
     #[test]
@@ -83,26 +86,25 @@ mod test {
         let now = std::time::Instant::now();
         for _ in 0..total {
             //(Windows10 6Core16GBMem) use Time: 84.0079ms ,each:84 ns/op use QPS: 11900823 QPS/s
-            let r = runtime.eval("1+1", &serde_json::Value::Null).unwrap();//use Time: 1.5752844s ,each:1575 ns/op use QPS: 634793 QPS/s
-            //println!("{}",r);
+            let r = runtime.eval("1+1", &serde_json::Value::Null).unwrap(); //use Time: 1.5752844s ,each:1575 ns/op use QPS: 634793 QPS/s
+                                                                            //println!("{}",r);
         }
         now.time(total);
         now.qps(total);
     }
 
-
     #[test]
-    fn test_thread_race(){
+    fn test_thread_race() {
         let runtime = Arc::new(RExprRuntime::new());
-        let r1=runtime.clone();
-        spawn(move ||{
+        let r1 = runtime.clone();
+        spawn(move || {
             let total = 1000000;
             for _ in 0..total {
                 let r = r1.eval("1+1", &serde_json::Value::Null).unwrap();
             }
         });
-        let r2=runtime.clone();
-        spawn(move ||{
+        let r2 = runtime.clone();
+        spawn(move || {
             let total = 1000000;
             for _ in 0..total {
                 let r = r2.eval("1+1", &serde_json::Value::Null).unwrap();

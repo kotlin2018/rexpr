@@ -1,15 +1,14 @@
-use std::fmt::{Display, Formatter};
-use serde::Deserialize;
-use serde::Serialize;
-use serde_json::{Value};
-use serde_json;
-use serde_json::json;
-use crate::ast::NodeType::{NBinary, NArg, NNull, NString, NNumber, NOpt, NBool};
 use crate::access::AccessField;
+use crate::ast::NodeType::{NArg, NBinary, NBool, NNull, NNumber, NOpt, NString};
+use crate::error::Error;
 use crate::eval::eval;
 use crate::token::TokenMap;
-use crate::error::Error;
-
+use serde::Deserialize;
+use serde::Serialize;
+use serde_json;
+use serde_json::json;
+use serde_json::Value;
+use std::fmt::{Display, Formatter};
 
 #[derive(Clone, PartialEq, Debug, Serialize, Deserialize)]
 pub enum NodeType {
@@ -96,7 +95,6 @@ impl Node {
         return self.value.as_str();
     }
 
-
     pub fn new_null() -> Self {
         Self {
             value: Value::Null,
@@ -180,7 +178,9 @@ impl Node {
             return Ok(Node::new_bool(n));
         } else if token.is_token(data) {
             return Ok(Node::new_token(data));
-        } else if (data.starts_with("'") && data.ends_with("'")) || (data.starts_with("`") && data.ends_with("`")) {
+        } else if (data.starts_with("'") && data.ends_with("'"))
+            || (data.starts_with("`") && data.ends_with("`"))
+        {
             return Ok(Node::new_string(&data[1..data.len() - 1]));
         } else if let Ok(n) = data.parse::<f64>() {
             if data.find(".").unwrap_or(0) != 0 {
@@ -192,7 +192,10 @@ impl Node {
             if Self::is_arg(data) {
                 return Ok(Node::new_arg(data));
             } else {
-                return Err(Error::from(format!("[rexpr] arg token not allow! token: {}", data)));
+                return Err(Error::from(format!(
+                    "[rexpr] arg token not allow! token: {}",
+                    data
+                )));
             }
         }
     }
@@ -223,8 +226,8 @@ impl Node {
 #[cfg(test)]
 mod test {
     use crate::ast::Node;
-    use crate::token::TokenMap;
     use crate::ast::NodeType::NArg;
+    use crate::token::TokenMap;
 
     #[test]
     fn test_parse() {

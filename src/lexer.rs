@@ -1,9 +1,8 @@
-use std::collections::LinkedList;
-use crate::error::Error;
-use crate::token::TokenMap;
 use crate::ast::Node;
+use crate::error::Error;
 use crate::parser::parse;
-
+use crate::token::TokenMap;
+use std::collections::LinkedList;
 
 ///lexer
 pub fn lexer(express: &str, token_map: &TokenMap) -> Result<Vec<String>, Error> {
@@ -32,11 +31,13 @@ fn loop_fill_lost_token(start_index: usize, arg: &mut Vec<String>, opt_map: &Tok
             arg.insert(0, "(".to_string());
             return loop_fill_lost_token(4, arg, opt_map);
         }
-        if index >= 1 &&
-            last != ")"
-            && item != "(" && item != ")"
+        if index >= 1
+            && last != ")"
+            && item != "("
+            && item != ")"
             && (opt_map.is_token(&last))
-            && opt_map.is_token(&item) {
+            && opt_map.is_token(&item)
+        {
             let mut right = "null".to_string();
             if arg.get((index + 1) as usize).is_some() {
                 right = arg.remove((index + 1) as usize);
@@ -139,7 +140,10 @@ pub fn parse_tokens(s: &str, token_map: &TokenMap) -> Result<Vec<String>, Error>
         }
     }
     if is_find_str {
-        return Err(Error::from(format!("[rexpr] find string expr not end! express:{}", s)));
+        return Err(Error::from(format!(
+            "[rexpr] find string expr not end! express:{}",
+            s
+        )));
     }
     let mut v = vec![];
     for item in result {
@@ -158,53 +162,71 @@ fn trim_push_back(arg: &str, list: &mut LinkedList<String>) {
 
 #[cfg(test)]
 mod test {
-    use crate::token::TokenMap;
-    use crate::lexer::{lexer, parse_tokens};
     use crate::bencher::QPS;
+    use crate::lexer::{lexer, parse_tokens};
+    use crate::token::TokenMap;
 
     #[test]
     fn test_fill() {
         let l = lexer("-1 == -a", &TokenMap::new()).unwrap();
         println!("{:?}", &l);
-        assert_eq!(l, vec!["(", "null", "-", "1", ")", "==", "(", "null", "-", "a", ")"])
+        assert_eq!(
+            l,
+            vec!["(", "null", "-", "1", ")", "==", "(", "null", "-", "a", ")"]
+        )
     }
 
     #[test]
     fn test_fill_first() {
         let l = lexer("-1 == -1", &TokenMap::new()).unwrap();
         println!("{:?}", &l);
-        assert_eq!(l, vec!["(", "null", "-", "1", ")", "==", "(", "null", "-", "1", ")"])
+        assert_eq!(
+            l,
+            vec!["(", "null", "-", "1", ")", "==", "(", "null", "-", "1", ")"]
+        )
     }
 
     #[test]
     fn test_fill_last() {
         let l = lexer("-1 == 1-", &TokenMap::new()).unwrap();
         println!("{:?}", &l);
-        assert_eq!(l, vec!["(", "null", "-", "1", ")", "==", "(", "1", "-", "null", ")"])
+        assert_eq!(
+            l,
+            vec!["(", "null", "-", "1", ")", "==", "(", "1", "-", "null", ")"]
+        )
     }
 
     #[test]
     fn test_fill_center() {
         let l = lexer("-1 == -1 && -1 == -2", &TokenMap::new()).unwrap();
         println!("{:?}", &l);
-        assert_eq!(l, vec!["(", "null", "-", "1", ")", "==", "(", "null", "-", "1", ")", "&&", "(", "null", "-", "1", ")", "==", "(", "null", "-", "2", ")"])
+        assert_eq!(
+            l,
+            vec![
+                "(", "null", "-", "1", ")", "==", "(", "null", "-", "1", ")", "&&", "(", "null",
+                "-", "1", ")", "==", "(", "null", "-", "2", ")"
+            ]
+        )
     }
 
     #[test]
     fn test_fill_center_n() {
         let l = lexer("-1 -1 -1 --1", &TokenMap::new()).unwrap();
         println!("{:?}", &l);
-        assert_eq!(l, vec!["(", "null", "-", "1", ")", "-", "1", "-", "1", "-", "(", "null", "-", "1", ")"])
+        assert_eq!(
+            l,
+            vec!["(", "null", "-", "1", ")", "-", "1", "-", "1", "-", "(", "null", "-", "1", ")"]
+        )
     }
 
     //cargo test --release --package rexpr --lib lexer::test::test_bench_lexer --no-fail-fast -- --exact -Z unstable-options --show-output
     #[test]
-    fn test_bench_lexer(){
-        let token_map=TokenMap::new();
-        let now=std::time::Instant::now();
-        let total=1000000;
-        for _ in 0..total{
-           parse_tokens("1+1", &token_map).unwrap();
+    fn test_bench_lexer() {
+        let token_map = TokenMap::new();
+        let now = std::time::Instant::now();
+        let total = 1000000;
+        for _ in 0..total {
+            parse_tokens("1+1", &token_map).unwrap();
         }
         now.time(total);
     }

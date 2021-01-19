@@ -1,19 +1,19 @@
 #![allow(unused_must_use)]
 #![allow(unused_variables)]
 
-pub mod eval;
+pub mod access;
 pub mod ast;
+pub mod bencher;
+pub mod error;
+pub mod eval;
 pub mod lexer;
+pub mod parser;
 pub mod runtime;
 pub mod token;
-pub mod parser;
-pub mod access;
-pub mod error;
-pub mod bencher;
 
 #[macro_use]
 extern crate serde_json;
 
 //test mod
-mod parser_test;
 mod eval_test;
+mod parser_test;
