@@ -57,6 +57,13 @@ impl RExprRuntime {
         let node = parse(&self.token_map, &tokens, lexer_arg)?;
         return node.eval(arg);
     }
+
+    /// parse get node
+    pub fn parse(&self, lexer_arg: &str) -> Result<Node, crate::error::Error> {
+        let tokens = lexer(lexer_arg, &self.token_map)?;
+        let node = parse(&self.token_map, &tokens, lexer_arg)?;
+        return Ok(node);
+    }
 }
 
 
