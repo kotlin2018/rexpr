@@ -22,10 +22,10 @@ impl RExprRuntime {
     ///eval express with arg value,if cache have value it will no run lexer expr.
     pub fn eval(&self, expr: &str, arg: &Value) -> Result<Value, crate::error::Error> {
         let g = self.expr_cache.try_read();
-        match g {
+        return match g {
             Ok(g) => {
                 let cached = g.get(expr);
-                return if cached.is_none() {
+                if cached.is_none() {
                     drop(cached);
                     drop(g);
                     let node = self.parse(expr)?;
@@ -39,11 +39,11 @@ impl RExprRuntime {
                 } else {
                     let nodes = cached.unwrap();
                     nodes.eval(arg)
-                };
+                }
             }
             _ => {
                 let node = self.parse(expr)?;
-                return node.eval(arg);
+                node.eval(arg)
             }
         }
     }
