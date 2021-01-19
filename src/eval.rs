@@ -29,9 +29,6 @@ pub fn eval(left: &Value,
             //allow null,string,number
             let left_is_string = left.is_string();
             let right_is_string = right.is_string();
-            if !(left.is_null() || left_is_string || left.is_number()) || !(right.is_null() || right_is_string || right.is_number()) {
-                return Result::Err(crate::error::Error::from(format!("[rexpr] eval error express:{} {} {}", left, op, right)));
-            }
             if left_is_string || right_is_string {
                 let left_v = left.as_str().unwrap_or("");
                 let right_v = right.as_str().unwrap_or("");
