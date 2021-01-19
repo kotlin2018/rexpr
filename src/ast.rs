@@ -64,6 +64,7 @@ impl Node {
         return self.node_type.clone();
     }
 
+    #[inline]
     pub fn equal_node_type(&self, arg: &NodeType) -> bool {
         return self.node_type == *arg;
     }

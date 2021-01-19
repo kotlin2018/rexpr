@@ -10,6 +10,8 @@ pub trait AccessMethod {
 
 /// a[0]  or a.b
 impl AccessField for Value {
+
+    #[inline]
     fn access_field(&self, env: &Value) -> Result<Value, crate::error::Error> {
         let arr = self.as_array().unwrap();
         let arr_len = arr.len() as i32;
