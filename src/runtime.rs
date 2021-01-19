@@ -25,8 +25,7 @@ impl RExprRuntime {
     pub fn eval(&self, expr: &str, arg: &Value) -> Result<Value, crate::error::Error> {
         let cached = self.cache_read(expr);
         if cached.is_none() {
-            let tokens = lexer(expr, &self.token_map)?;
-            let node = parse(&self.token_map, &tokens, expr)?;
+            let node = self.parse(expr)?;
             self.cache_insert(expr.to_string(), node.clone());
             return node.eval(arg);
         } else {
