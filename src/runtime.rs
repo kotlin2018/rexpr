@@ -1,15 +1,13 @@
 use serde_json::Value;
-use dashmap::DashMap;
-use dashmap::mapref::one::Ref;
 use crate::ast::Node;
 use crate::token::TokenMap;
 use crate::lexer::lexer;
 use crate::parser::parse;
-
+use std::sync::{RwLock};
 /// the express engine for  exe code on runtime
 #[derive(Debug)]
 pub struct RExprRuntime {
-    pub expr_cache: DashMap<String, Node>,
+    pub expr_cache: RwLock<std::collections::HashMap<String, Node>>,
     pub token_map: TokenMap<'static>,
 }
 
@@ -23,31 +21,31 @@ impl RExprRuntime {
 
     ///eval express with arg value,if cache have value it will no run lexer expr.
     pub fn eval(&self, expr: &str, arg: &Value) -> Result<Value, crate::error::Error> {
-        let cached = self.cache_read(expr);
-        if cached.is_none() {
-            let node = self.parse(expr)?;
-            self.cache_insert(expr.to_string(), node.clone());
-            return node.eval(arg);
-        } else {
-            let nodes = cached.unwrap();
-            return nodes.eval(arg);
+        let g = self.expr_cache.try_read();
+        match g {
+            Ok(g) => {
+                let cached = g.get(expr);
+                if cached.is_none() {
+                    drop(cached);
+                    drop(g);
+                    let node = self.parse(expr)?;
+                    match self.expr_cache.try_write() {
+                        Ok(mut w) => {
+                            w.insert(expr.to_string(), node.clone());
+                        }
+                        _ => {}
+                    }
+                    return node.eval(arg);
+                } else {
+                    let nodes = cached.unwrap();
+                    return nodes.eval(arg);
+                }
+            }
+            _ => {
+                let node = self.parse(expr)?;
+                return node.eval(arg);
+            }
         }
-    }
-
-    /// read from cache,if not exist return null
-    fn cache_read(&self, arg: &str) -> Option<Ref<String, Node>> {
-        let cache_read = self.expr_cache.get(arg);
-        if cache_read.is_none() {
-            return Option::None;
-        }
-        let cache_read = cache_read.unwrap();
-        return Some(cache_read);
-    }
-
-    /// save to cache,if fail nothing to do.
-    fn cache_insert(&self, key: String, node: Node) -> Option<Node> {
-        let cache_write = self.expr_cache.insert(key, node);
-        return cache_write;
     }
 
     /// no cache mode to run engine
@@ -70,8 +68,11 @@ impl RExprRuntime {
 mod test {
     use crate::runtime::RExprRuntime;
     use crate::bencher::QPS;
+    use std::thread::{sleep, spawn};
+    use std::time::Duration;
+    use std::sync::Arc;
 
-    //cargo test --release --package rexpr --lib interpreter::expr::runtime::test::test_bench --no-fail-fast -- --exact -Z unstable-options --show-output
+    //cargo test --release --package rexpr --lib runtime::test::test_bench --no-fail-fast -- --exact -Z unstable-options --show-output
     #[test]
     fn test_bench() {
         let runtime = RExprRuntime::new();
@@ -87,5 +88,26 @@ mod test {
         }
         now.time(total);
         now.qps(total);
+    }
+
+
+    #[test]
+    fn test_thread_race(){
+        let runtime = Arc::new(RExprRuntime::new());
+        let r1=runtime.clone();
+        spawn(move ||{
+            let total = 1000000;
+            for _ in 0..total {
+                let r = r1.eval("1+1", &serde_json::Value::Null).unwrap();
+            }
+        });
+        let r2=runtime.clone();
+        spawn(move ||{
+            let total = 1000000;
+            for _ in 0..total {
+                let r = r2.eval("1+1", &serde_json::Value::Null).unwrap();
+            }
+        });
+        sleep(Duration::from_secs(10));
     }
 }
