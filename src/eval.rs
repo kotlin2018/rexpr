@@ -47,13 +47,6 @@ pub fn eval(left: &Value, right: &Value, op: &str) -> Result<Value> {
             }
         }
         _ => {
-            //allow number,null
-            if !(left.is_number() || left.is_null()) || !(right.is_number() || right.is_null()) {
-                return Result::Err(crate::error::Error::from(format!(
-                    "[rexpr] eval error express:{} {} {}",
-                    left, op, right
-                )));
-            }
             match op {
                 ">=" => {
                     let left_v = left.as_f64().unwrap_or(0.0);
@@ -135,7 +128,7 @@ pub fn eval(left: &Value, right: &Value, op: &str) -> Result<Value> {
                         )));
                     }
                     let left_v = left.as_f64().unwrap_or(0.0);
-                    let right_v = right.as_f64().unwrap();
+                    let right_v = right.as_f64().unwrap_or(0.0);
                     return Result::Ok(json!(left_v.powf(right_v)));
                 }
                 "-" => {
