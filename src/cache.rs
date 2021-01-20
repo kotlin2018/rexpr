@@ -5,7 +5,7 @@ use std::collections::hash_map::RandomState;
 
 #[derive(Debug)]
 pub struct RWLockMapCache{
-    pub(crate) shared:RwLock<std::collections::HashMap<String,Node>>
+    pub shared:RwLock<std::collections::HashMap<String,Node>>
 }
 
 impl RWLockMapCache{
