@@ -10,6 +10,7 @@ pub mod lexer;
 pub mod parser;
 pub mod runtime;
 pub mod token;
+mod cache;
 
 #[macro_use]
 extern crate serde_json;

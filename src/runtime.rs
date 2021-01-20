@@ -3,18 +3,19 @@ use crate::lexer::lexer;
 use crate::parser::parse;
 use crate::token::TokenMap;
 use serde_json::Value;
-use std::sync::RwLock;
+use crate::cache::RWLockMapCache;
+
 /// the express engine for  exe code on runtime
 #[derive(Debug)]
 pub struct RExprRuntime {
-    pub expr_cache: RwLock<std::collections::HashMap<String, Node>>,
+    pub expr_cache: RWLockMapCache,
     pub token_map: TokenMap<'static>,
 }
 
 impl RExprRuntime {
     pub fn new() -> Self {
         return Self {
-            expr_cache: Default::default(),
+            expr_cache: RWLockMapCache{ shared: Default::default() },
             token_map: TokenMap::new(),
         };
     }
