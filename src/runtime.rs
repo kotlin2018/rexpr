@@ -4,47 +4,33 @@ use crate::parser::parse;
 use crate::token::TokenMap;
 use serde_json::Value;
 use crate::cache::RWLockMapCache;
+use dashmap::DashMap;
 
 /// the express engine for  exe code on runtime
 #[derive(Debug)]
 pub struct RExprRuntime {
-    pub expr_cache: RWLockMapCache,
+    pub expr_cache: DashMap<String,Node>,
     pub token_map: TokenMap<'static>,
 }
 
 impl RExprRuntime {
     pub fn new() -> Self {
         return Self {
-            expr_cache: RWLockMapCache{ shared: Default::default() },
+            expr_cache: DashMap::new(),
             token_map: TokenMap::new(),
         };
     }
 
     ///eval express with arg value,if cache have value it will no run lexer expr.
     pub fn eval(&self, expr: &str, arg: &Value) -> Result<Value, crate::error::Error> {
-        let g = self.expr_cache.try_read();
-        return match g {
-            Ok(g) => {
-                let cached = g.get(expr);
-                if cached.is_none() {
-                    drop(cached);
-                    drop(g);
-                    let node = self.parse(expr)?;
-                    match self.expr_cache.try_write() {
-                        Ok(mut w) => {
-                            w.insert(expr.to_string(), node.clone());
-                        }
-                        _ => {}
-                    }
-                    node.eval(arg)
-                } else {
-                    let nodes = cached.unwrap();
-                    nodes.eval(arg)
-                }
+        match self.expr_cache.get(expr) {
+            Some(v) => {
+                return v.right.as_ref().unwrap().eval(arg);
             }
             _ => {
                 let node = self.parse(expr)?;
-                node.eval(arg)
+                self.expr_cache.insert(expr.to_string(), node.clone());
+                return node.eval(arg);
             }
         }
     }
