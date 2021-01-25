@@ -4,13 +4,13 @@
 pub mod access;
 pub mod ast;
 pub mod bencher;
+mod cache;
 pub mod error;
 pub mod eval;
 pub mod lexer;
 pub mod parser;
 pub mod runtime;
 pub mod token;
-mod cache;
 
 #[macro_use]
 extern crate serde_json;

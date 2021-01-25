@@ -46,104 +46,102 @@ pub fn eval(left: &Value, right: &Value, op: &str) -> Result<Value> {
                 return Result::Ok(json!(left_v + right_v));
             }
         }
-        _ => {
-            match op {
-                ">=" => {
-                    let left_v = left.as_f64().unwrap_or(0.0);
-                    let right_v = right.as_f64().unwrap_or(0.0);
-                    return Result::Ok(json!(left_v >= right_v));
-                }
-                "<=" => {
-                    let left_v = left.as_f64().unwrap_or(0.0);
-                    let right_v = right.as_f64().unwrap_or(0.0);
-                    return Result::Ok(json!(left_v <= right_v));
-                }
-                ">" => {
-                    let left_v = left.as_f64().unwrap_or(0.0);
-                    let right_v = right.as_f64().unwrap_or(0.0);
-                    return Result::Ok(json!(left_v > right_v));
-                }
-                "<" => {
-                    let left_v = left.as_f64().unwrap_or(0.0);
-                    let right_v = right.as_f64().unwrap_or(0.0);
-                    return Result::Ok(json!(left_v < right_v));
-                }
-                "*" => {
-                    let left_v = left.as_f64().unwrap_or(0.0);
-                    let right_v = right.as_f64().unwrap_or(0.0);
-                    if left.is_i64() && right.is_i64() {
-                        return Result::Ok(json!(left_v as i64 * right_v as i64));
-                    }
-                    return Result::Ok(json!(left_v * right_v));
-                }
-                "/" => {
-                    let left_v = left.as_f64().unwrap_or(0.0);
-                    let right_v = right.as_f64();
-                    if right_v.is_some() {
-                        if left.is_i64() && right.is_i64() {
-                            return Result::Ok(json!(left_v as i64 / right_v.unwrap() as i64));
-                        }
-                        return Result::Ok(json!(left_v / right_v.unwrap()));
-                    } else {
-                        return Result::Err(Error::from(format!(
-                            "[rexpr] express '{} / null' Infinity!",
-                            left_v
-                        )));
-                    }
-                }
-                "%" => {
-                    let left_v = left.as_f64().unwrap_or(0.0);
-                    let right_v = right.as_f64();
-                    if right_v.is_some() {
-                        if left.is_i64() && right.is_i64() {
-                            return Result::Ok(json!(left_v as i64 % right_v.unwrap() as i64));
-                        }
-                        return Result::Ok(json!(left_v % right_v.unwrap()));
-                    } else {
-                        return Result::Err(Error::from(format!(
-                            "[rexpr] express '{} % null' Infinity!",
-                            left_v
-                        )));
-                    }
-                }
-                "^" => {
-                    if !(left.is_i64() || left.is_null()) || !(right.is_i64() || right.is_null()) {
-                        return Result::Err(crate::error::Error::from(format!(
-                            "[rexpr] only support 'int ^ int'! express:{}{}{}",
-                            left, op, right
-                        )));
-                    }
-                    let left_v = left.as_i64().unwrap_or(0);
-                    let right_v = right.as_i64().unwrap_or(0);
-                    if left.is_i64() && right.is_i64() {
-                        return Result::Ok(json!(left_v as i64 ^ right_v as i64));
-                    }
-                    return Result::Ok(json!(left_v ^ right_v));
-                }
-                "**" => {
-                    if right.is_u64() == false {
-                        return Result::Err(crate::error::Error::from(format!(
-                            "[rexpr] only support 'number ** uint'! express:{}{}{}",
-                            left, op, right
-                        )));
-                    }
-                    let left_v = left.as_f64().unwrap_or(0.0);
-                    let right_v = right.as_f64().unwrap_or(0.0);
-                    return Result::Ok(json!(left_v.powf(right_v)));
-                }
-                "-" => {
-                    let left_v = left.as_f64().unwrap_or(0.0);
-                    let right_v = right.as_f64().unwrap_or(0.0);
-                    let left_i64 = left.is_i64() || left.is_null();
-                    let right_i64 = right.is_i64() || right.is_null();
-                    if left_i64 && right_i64 {
-                        return Result::Ok(json!(left_v as i64 - right_v as i64));
-                    }
-                    return Result::Ok(json!(left_v - right_v));
-                }
-                _ => {}
+        _ => match op {
+            ">=" => {
+                let left_v = left.as_f64().unwrap_or(0.0);
+                let right_v = right.as_f64().unwrap_or(0.0);
+                return Result::Ok(json!(left_v >= right_v));
             }
-        }
+            "<=" => {
+                let left_v = left.as_f64().unwrap_or(0.0);
+                let right_v = right.as_f64().unwrap_or(0.0);
+                return Result::Ok(json!(left_v <= right_v));
+            }
+            ">" => {
+                let left_v = left.as_f64().unwrap_or(0.0);
+                let right_v = right.as_f64().unwrap_or(0.0);
+                return Result::Ok(json!(left_v > right_v));
+            }
+            "<" => {
+                let left_v = left.as_f64().unwrap_or(0.0);
+                let right_v = right.as_f64().unwrap_or(0.0);
+                return Result::Ok(json!(left_v < right_v));
+            }
+            "*" => {
+                let left_v = left.as_f64().unwrap_or(0.0);
+                let right_v = right.as_f64().unwrap_or(0.0);
+                if left.is_i64() && right.is_i64() {
+                    return Result::Ok(json!(left_v as i64 * right_v as i64));
+                }
+                return Result::Ok(json!(left_v * right_v));
+            }
+            "/" => {
+                let left_v = left.as_f64().unwrap_or(0.0);
+                let right_v = right.as_f64();
+                if right_v.is_some() {
+                    if left.is_i64() && right.is_i64() {
+                        return Result::Ok(json!(left_v as i64 / right_v.unwrap() as i64));
+                    }
+                    return Result::Ok(json!(left_v / right_v.unwrap()));
+                } else {
+                    return Result::Err(Error::from(format!(
+                        "[rexpr] express '{} / null' Infinity!",
+                        left_v
+                    )));
+                }
+            }
+            "%" => {
+                let left_v = left.as_f64().unwrap_or(0.0);
+                let right_v = right.as_f64();
+                if right_v.is_some() {
+                    if left.is_i64() && right.is_i64() {
+                        return Result::Ok(json!(left_v as i64 % right_v.unwrap() as i64));
+                    }
+                    return Result::Ok(json!(left_v % right_v.unwrap()));
+                } else {
+                    return Result::Err(Error::from(format!(
+                        "[rexpr] express '{} % null' Infinity!",
+                        left_v
+                    )));
+                }
+            }
+            "^" => {
+                if !(left.is_i64() || left.is_null()) || !(right.is_i64() || right.is_null()) {
+                    return Result::Err(crate::error::Error::from(format!(
+                        "[rexpr] only support 'int ^ int'! express:{}{}{}",
+                        left, op, right
+                    )));
+                }
+                let left_v = left.as_i64().unwrap_or(0);
+                let right_v = right.as_i64().unwrap_or(0);
+                if left.is_i64() && right.is_i64() {
+                    return Result::Ok(json!(left_v as i64 ^ right_v as i64));
+                }
+                return Result::Ok(json!(left_v ^ right_v));
+            }
+            "**" => {
+                if right.is_u64() == false {
+                    return Result::Err(crate::error::Error::from(format!(
+                        "[rexpr] only support 'number ** uint'! express:{}{}{}",
+                        left, op, right
+                    )));
+                }
+                let left_v = left.as_f64().unwrap_or(0.0);
+                let right_v = right.as_f64().unwrap_or(0.0);
+                return Result::Ok(json!(left_v.powf(right_v)));
+            }
+            "-" => {
+                let left_v = left.as_f64().unwrap_or(0.0);
+                let right_v = right.as_f64().unwrap_or(0.0);
+                let left_i64 = left.is_i64() || left.is_null();
+                let right_i64 = right.is_i64() || right.is_null();
+                if left_i64 && right_i64 {
+                    return Result::Ok(json!(left_v as i64 - right_v as i64));
+                }
+                return Result::Ok(json!(left_v - right_v));
+            }
+            _ => {}
+        },
     }
     return Result::Err(crate::error::Error::from(format!(
         "[rexpr] eval error express:{} {} {}",

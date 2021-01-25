@@ -85,6 +85,7 @@ pub fn parse_tokens(s: &str, token_map: &TokenMap) -> Result<Vec<String>, Error>
     let mut is_find_str = false;
     let mut temp_str = String::new();
 
+    let empty_string = String::new();
     //token
     let mut temp_arg = String::new();
     let mut index: i32 = -1;
@@ -121,15 +122,14 @@ pub fn parse_tokens(s: &str, token_map: &TokenMap) -> Result<Vec<String>, Error>
         //token node
         if is_token {
             if result.len() > 0 {
-                let def = String::new();
-                let back = result.back().unwrap_or(&def).clone();
-                if token_map.is_token(&format!("{}{}", &back, &item)) == false {
+                let back = result.back().unwrap_or(&empty_string);
+                if token_map.is_token(&format!("{}{}", back, &item)) == false {
                     trim_push_back(&item.to_string(), &mut result);
                     continue;
                 }
-                if back != "" && token_map.is_token(back.as_str()) {
+                if back != "" && token_map.is_token(back) {
+                    let mut new_item = back.to_owned();
                     result.pop_back();
-                    let mut new_item = back.clone();
                     new_item.push(item);
                     trim_push_back(&new_item, &mut result);
                     continue;
