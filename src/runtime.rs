@@ -25,7 +25,7 @@ impl RExprRuntime {
     pub fn eval(&self, expr: &str, arg: &Value) -> Result<Value, crate::error::Error> {
         match self.expr_cache.get(expr) {
             Some(v) => {
-                return v.right.as_ref().unwrap().eval(arg);
+                return v.eval(arg);
             }
             _ => {
                 let node = self.parse(expr)?;
