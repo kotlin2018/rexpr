@@ -62,6 +62,23 @@ mod test {
     use std::thread::{sleep, spawn};
     use std::time::Duration;
 
+    //cargo test --release --package rexpr --lib runtime::test::test_bench_func --no-fail-fast -- --exact -Z unstable-options --show-output
+    #[test]
+    fn test_bench_func() {
+        let runtime = RExprRuntime::new();
+        let func=runtime.parse("1+1").unwrap();
+
+        let total = 1000000;
+        let now = std::time::Instant::now();
+        for _ in 0..total {
+            //(Windows10 6Core16GBMem) use Time: 84.0079ms ,each:84 ns/op use QPS: 11900823 QPS/s
+            let r = func.eval( &serde_json::Value::Null).unwrap(); //use Time: 1.5752844s ,each:1575 ns/op use QPS: 634793 QPS/s
+            //println!("{}",r);
+        }
+        now.time(total);
+        now.qps(total);
+    }
+
     //cargo test --release --package rexpr --lib runtime::test::test_bench --no-fail-fast -- --exact -Z unstable-options --show-output
     #[test]
     fn test_bench() {
