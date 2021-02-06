@@ -1,29 +1,29 @@
 #[cfg(test)]
 mod test {
-    use serde_json::json;
+    use crate::bencher::QPS;
     use crate::lexer;
     use crate::token::TokenMap;
-    use crate::bencher::QPS;
+    use serde_json::json;
 
     #[test]
     fn test_lexer() {
         let node = lexer::lexer_parse_node("-1 == -a", &TokenMap::new()).unwrap();
         println!("{:#?}", &node);
         let john = json!({
-        "a":1,
-        "name": "John Doe",
-        "age": {
-           "yes":"sadf"
-        },
-         "sex":{
-            "a":"i'm a",
-            "b":"i'm b",
-         },
-        "phones": [
-            "+44 1234567",
-            "+44 2345678"
-        ]
-    });
+            "a":1,
+            "name": "John Doe",
+            "age": {
+               "yes":"sadf"
+            },
+             "sex":{
+                "a":"i'm a",
+                "b":"i'm b",
+             },
+            "phones": [
+                "+44 1234567",
+                "+44 2345678"
+            ]
+        });
         println!("result >>>>>>>>>>   =  {}", node.eval(&john).unwrap());
     }
 
@@ -41,8 +41,8 @@ mod test {
     fn test_benchmark() {
         let box_node = lexer::lexer_parse_node("1+1", &TokenMap::new()).unwrap();
         let john = json!({
-        "name": "John Doe",
-    });
+            "name": "John Doe",
+        });
         let total = 10000000;
         let now = std::time::Instant::now();
         for _ in 0..total {
