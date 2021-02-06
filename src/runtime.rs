@@ -61,6 +61,8 @@ mod test {
     use std::sync::Arc;
     use std::thread::{sleep, spawn};
     use std::time::Duration;
+    use crate::eval::eval;
+    use crate::lexer::lexer;
 
     //cargo test --release --package rexpr --lib runtime::test::test_bench_func --no-fail-fast -- --exact -Z unstable-options --show-output
     #[test]
@@ -77,6 +79,8 @@ mod test {
             //serde_json::json!(a.as_i64().unwrap()+b.as_i64().unwrap());
             //(Windows10 6Core16GBMem) use Time: 41.8378ms ,each:41 ns/op
             func.eval( &serde_json::Value::Null).unwrap();
+
+            //eval(&a,&b,"+");
         }
         now.time(total);
         now.qps(total);

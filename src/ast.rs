@@ -64,29 +64,18 @@ impl Node {
     }
 
     #[inline]
-    pub fn equal_node_type(&self, arg: &NodeType) -> bool {
-        return self.node_type == *arg;
-    }
-
-    pub fn is_value_node(&self) -> Option<Value> {
-        if self.equal_node_type(&NBinary) {
-            return Option::None;
-        } else if self.equal_node_type(&NArg) {
-            return Option::None;
-        } else {
-            return Option::Some(self.value.clone());
-        }
-    }
-
-    #[inline]
     pub fn eval(&self, env: &Value) -> Result<Value, crate::error::Error> {
-        if self.equal_node_type(&NBinary) {
-            let left_v = self.left.as_ref().unwrap().eval(env)?;
-            let right_v = self.right.as_ref().unwrap().eval(env)?;
-            let token = self.to_string();
-            return eval(&left_v, &right_v, token);
-        } else if self.equal_node_type(&NArg) {
-            return self.value.access_field(env);
+        match self.node_type {
+            NodeType::NBinary => {
+                let left_v = self.left.as_ref().unwrap().eval(env)?;
+                let right_v = self.right.as_ref().unwrap().eval(env)?;
+                let token = self.to_string();
+                return eval(&left_v, &right_v, token);
+            }
+            NodeType::NArg => {
+                return self.value.access_field(env);
+            }
+            _ => {}
         }
         return Result::Ok(self.value.clone());
     }
