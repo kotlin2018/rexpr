@@ -68,12 +68,15 @@ mod test {
         let runtime = RExprRuntime::new();
         let func=runtime.parse("1+1").unwrap();
 
+        let a=serde_json::json!(1);
+        let b=serde_json::json!(1);
         let total = 1000000;
         let now = std::time::Instant::now();
         for _ in 0..total {
-            //(Windows10 6Core16GBMem) use Time: 41.8378ms ,each:41 ns/op use QPS: 23882250 QPS/s
-            let r = func.eval( &serde_json::Value::Null).unwrap();
-            //println!("{}",r);
+            //use Time: 7.2385ms ,each:7 ns/op
+            //serde_json::json!(a.as_i64().unwrap()+b.as_i64().unwrap());
+            //(Windows10 6Core16GBMem) use Time: 41.8378ms ,each:41 ns/op
+            func.eval( &serde_json::Value::Null).unwrap();
         }
         now.time(total);
         now.qps(total);
