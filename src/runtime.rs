@@ -71,8 +71,8 @@ mod test {
         let total = 1000000;
         let now = std::time::Instant::now();
         for _ in 0..total {
-            //(Windows10 6Core16GBMem) use Time: 84.0079ms ,each:84 ns/op use QPS: 11900823 QPS/s
-            let r = func.eval( &serde_json::Value::Null).unwrap(); //use Time: 1.5752844s ,each:1575 ns/op use QPS: 634793 QPS/s
+            //(Windows10 6Core16GBMem) use Time: 41.8378ms ,each:41 ns/op use QPS: 23882250 QPS/s
+            let r = func.eval( &serde_json::Value::Null).unwrap();
             //println!("{}",r);
         }
         now.time(total);
