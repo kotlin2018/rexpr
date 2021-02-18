@@ -54,6 +54,12 @@ impl From<&dyn std::error::Error> for Error {
     }
 }
 
+impl From<Error> for std::io::Error{
+    fn from(arg: Error) -> Self {
+        arg.into()
+    }
+}
+
 impl Clone for Error {
     fn clone(&self) -> Self {
         Error::from(self.to_string())
