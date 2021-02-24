@@ -1,5 +1,4 @@
 use crate::ast::Node;
-use crate::cache::RWLockMapCache;
 use crate::lexer::lexer;
 use crate::parser::parse;
 use crate::token::TokenMap;
