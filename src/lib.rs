@@ -4,7 +4,6 @@
 pub mod access;
 pub mod ast;
 pub mod bencher;
-mod cache;
 pub mod error;
 pub mod eval;
 pub mod lexer;
