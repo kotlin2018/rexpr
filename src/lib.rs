@@ -3,6 +3,7 @@
 
 pub mod access;
 pub mod ast;
+#[macro_use]
 pub mod bencher;
 pub mod error;
 pub mod eval;

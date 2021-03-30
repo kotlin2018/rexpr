@@ -27,3 +27,18 @@ impl QPS for std::time::Instant {
         println!("cost:{:?}", time);
     }
 }
+
+#[macro_export]
+macro_rules! bench {
+    ($total:expr,$body:block) => {
+       {
+        use rexpr::bencher::QPS;
+        let now = std::time::Instant::now();
+        for _ in 0..$total {
+            $body;
+        }
+        now.time($total);
+        now.qps($total);
+       }
+    };
+}
