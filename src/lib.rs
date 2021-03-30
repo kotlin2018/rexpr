@@ -15,6 +15,11 @@ pub mod token;
 #[macro_use]
 extern crate serde_json;
 
+#[macro_use]
+extern crate rexpr_macro;
+
+pub use rexpr_macro::{expr};
+
 //test mod
 mod eval_test;
 mod parser_test;
