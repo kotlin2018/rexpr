@@ -9,7 +9,7 @@ publish = false
 
 [dependencies]
 
-rexpr={ path = "../" }
+rexpr={ path = "../" ,features = ["debug_mode"]}
 #serde
 serde = { version = "1", features = ["derive"] }
 serde_json = { version = "1", features = ["preserve_order"] }

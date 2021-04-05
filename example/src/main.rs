@@ -10,7 +10,7 @@ fn main() {
     println!("result: {}", result);
 }
 
-#[expr("1+1")]
+#[expr("1+2")]
 pub fn gen() -> rexpr::error::Result<serde_json::Value> {
     return Ok(serde_json::Value::Null);
 }
