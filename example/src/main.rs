@@ -11,9 +11,7 @@ fn main() {
 }
 
 #[expr("1+2")]
-pub fn gen() -> rexpr::error::Result<serde_json::Value> {
-    return Ok(serde_json::Value::Null);
-}
+pub fn gen() -> rexpr::error::Result<serde_json::Value>{}
 
 #[test]
 fn it_works() {
