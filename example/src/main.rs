@@ -3,7 +3,6 @@ extern crate rexpr;
 
 use rexpr::runtime::RExprRuntime;
 
-
 fn main() {
     let runtime = RExprRuntime::new();
     let result = runtime.eval("1+1", &serde_json::json!(null)).unwrap();
@@ -11,10 +10,11 @@ fn main() {
 }
 
 #[expr("1+2")]
-pub fn gen() -> rexpr::error::Result<serde_json::Value>{}
+pub fn gen(arg: &mut serde_json::Value) -> rexpr::error::Result<serde_json::Value> {}
 
 #[test]
 fn it_works() {
-    let v = gen();
+    let mut arg = serde_json::json!({});
+    let v = gen(&mut arg);
     println!("{}", v.unwrap());
 }
