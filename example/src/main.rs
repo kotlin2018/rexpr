@@ -9,15 +9,11 @@ fn main() {
     println!("result: {}", result);
 }
 
-macro_rules! attr {
-    () => {};
-}
-
 // #[py_sql(   "select * from biz_activity where delete_flag = 0
 //                   if @.name.str() != '':
 //                     and name=#{@.name}")]
 
-#[expr("@['a']['b'].i64() != &null")]
+#[expr("@.a.b.i64() != &null")]
 pub fn gen(arg: &serde_json::Value) -> rexpr::error::Result<serde_json::Value> {}
 
 #[test]
