@@ -13,7 +13,7 @@ macro_rules! attr {
     () => {};
 }
 
-#[expr("1+2+&arg['a']['b'].as_i64().unwrap_or(0)")]
+#[expr("&arg['a']['b'].as_i64() != &null")]
 pub fn gen(arg: &mut serde_json::Value) -> rexpr::error::Result<serde_json::Value> {
     let a_b = &arg["a"]["b"];
     if a_b.is_string() {
