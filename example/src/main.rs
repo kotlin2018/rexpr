@@ -18,15 +18,15 @@ macro_rules! attr {
 //                     and name=#{@.name}")]
 
 #[expr("@['a']['b'].i64() != &null")]
-pub fn gen(arg: &mut serde_json::Value) -> rexpr::error::Result<serde_json::Value> {}
+pub fn gen(arg: &serde_json::Value) -> rexpr::error::Result<serde_json::Value> {}
 
 #[test]
 fn it_works() {
-    let mut arg = serde_json::json!({
+    let arg = serde_json::json!({
         "a":{
             "b":8
         }
     });
-    let v = gen(&mut arg);
+    let v = gen(&arg);
     println!("{}", v.unwrap());
 }
