@@ -84,7 +84,32 @@ pub(crate) fn impl_fn(f: &ItemFn, args: crate::proc_macro::TokenStream) -> Token
     }
 
 
-    string_data = string_data.replace("'", "\"");
+    //string convert
+    let mut last = None;
+    let mut new_data =String::new();
+    for x in string_data.chars() {
+        if last != Some('\\') && (x == '\'' || x == '"') {
+            if string_start{
+                string_start = false;
+            }else{
+                string_start = true;
+            }
+            last=Some(x);
+            new_data.push('\"');
+            continue;
+        }
+        if string_start==false{
+             if x=='\''{
+                 new_data.push_str("\"");
+                 last=Some(x);
+                 continue;
+             }
+        }
+        new_data.push(x);
+        last=Some(x);
+        continue;
+    }
+    string_data=new_data;
     //as
     string_data = string_data.replace(".as_i32()", ".as_i64().unwrap_or(0)");
     string_data = string_data.replace(".as_i64()", ".as_i64().unwrap_or(0)");
