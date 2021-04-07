@@ -25,23 +25,35 @@ fn is_name_char(arg: char) -> bool {
 pub(crate) fn impl_fn(f: &ItemFn, args: crate::proc_macro::TokenStream) -> TokenStream {
     let mut string_data = args.to_string();
     string_data = string_data[1..string_data.len() - 1].to_string();
-    string_data = string_data.replace("'", "\"");
     string_data = string_data.replace("null", "serde_json::Value::Null");
 
 
     let mut ats = vec![];
     let mut at = false;
+    let mut string_start = false;
+    let mut last = None;
     for x in string_data.chars() {
-        if x == '@' {
-            at = true;
-            ats.push(x.to_string());
+        if last != Some('\\') && (x == '\'' || x == '"') {
+            if string_start{
+                string_start = false;
+            }else{
+                string_start = true;
+            }
+            last=Some(x);
             continue;
         }
-        if at {
-            if is_name_char(x) || x == '(' || x == ')' {
-                ats.last_mut().unwrap().push(x);
-            } else {
-                at = false;
+        if string_start==false{
+            if x == '@' {
+                at = true;
+                ats.push(x.to_string());
+                continue;
+            }
+            if at {
+                if is_name_char(x) || x == '(' || x == ')' {
+                    ats.last_mut().unwrap().push(x);
+                } else {
+                    at = false;
+                }
             }
         }
     }
@@ -53,7 +65,7 @@ pub(crate) fn impl_fn(f: &ItemFn, args: crate::proc_macro::TokenStream) -> Token
         let mut at_start = false;
         for x in items {
             if x == "@" {
-                new_at.push_str(x);
+                new_at.push_str("arg");
                 at_start = true;
             } else if x.ends_with("()") {
                 //method
@@ -72,7 +84,7 @@ pub(crate) fn impl_fn(f: &ItemFn, args: crate::proc_macro::TokenStream) -> Token
     }
 
 
-    string_data = string_data.replace("@", "arg");
+    string_data = string_data.replace("'", "\"");
     //as
     string_data = string_data.replace(".as_i32()", ".as_i64().unwrap_or(0)");
     string_data = string_data.replace(".as_i64()", ".as_i64().unwrap_or(0)");
