@@ -88,7 +88,7 @@ pub(crate) fn impl_fn(f: &ItemFn, args: crate::proc_macro::TokenStream) -> Token
     let mut last = None;
     let mut new_data = String::new();
     for x in string_data.chars() {
-        if last != Some('\\') && (x == '\'' || x == '"') {
+        if last.ne(&Some('\\')) && (x == '\'' || x == '"') {
             if string_start {
                 string_start = false;
             } else {
@@ -97,13 +97,6 @@ pub(crate) fn impl_fn(f: &ItemFn, args: crate::proc_macro::TokenStream) -> Token
             last = Some(x);
             new_data.push('\"');
             continue;
-        }
-        if string_start == false {
-            if x == '\'' {
-                new_data.push_str("\"");
-                last = Some(x);
-                continue;
-            }
         }
         new_data.push(x);
         last = Some(x);

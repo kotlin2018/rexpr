@@ -13,7 +13,7 @@ fn main() {
 //                   if @.name.str() != '':
 //                     and name=#{@.name}")]
 
-#[expr("@.a.b.string()+'fu\'ck'")]
+#[expr("@.a.b.string()+'fuck'")]
 pub fn gen(arg: &serde_json::Value) -> rexpr::error::Result<serde_json::Value> {}
 
 #[test]
