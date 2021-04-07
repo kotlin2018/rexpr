@@ -85,7 +85,7 @@ pub(crate) fn impl_fn(f: &ItemFn, args: crate::proc_macro::TokenStream) -> Token
     string_data = string_data.replace(".f64()", ".as_f64().unwrap_or(0.0)");
     string_data = string_data.replace(".str()", ".as_str().unwrap_or(\"\")");
     string_data = string_data.replace(".bool()", ".as_bool().unwrap_or(false)");
-    string_data = string_data.replace(".str_owned()", ".as_str().unwrap_or(\"\").to_string()");
+    string_data = string_data.replace(".string()", ".as_str().unwrap_or(\"\").to_string()");
 
     println!("string_data:{}", string_data);
     //let s = syn::parse_str::<syn::LitStr>(&string_data).unwrap();
