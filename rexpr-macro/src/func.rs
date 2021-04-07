@@ -28,21 +28,22 @@ pub(crate) fn impl_fn(f: &ItemFn, args: crate::proc_macro::TokenStream) -> Token
     string_data = string_data.replace("null", "serde_json::Value::Null");
 
 
+    //access field convert
     let mut ats = vec![];
     let mut at = false;
     let mut string_start = false;
     let mut last = None;
     for x in string_data.chars() {
         if last != Some('\\') && (x == '\'' || x == '"') {
-            if string_start{
+            if string_start {
                 string_start = false;
-            }else{
+            } else {
                 string_start = true;
             }
-            last=Some(x);
+            last = Some(x);
             continue;
         }
-        if string_start==false{
+        if string_start == false {
             if x == '@' {
                 at = true;
                 ats.push(x.to_string());
@@ -57,7 +58,6 @@ pub(crate) fn impl_fn(f: &ItemFn, args: crate::proc_macro::TokenStream) -> Token
             }
         }
     }
-    println!("access_fields:{:#?}", ats);
     for at in ats {
         let mut new_at = String::new();
 
@@ -84,32 +84,32 @@ pub(crate) fn impl_fn(f: &ItemFn, args: crate::proc_macro::TokenStream) -> Token
     }
 
 
-    //string convert
+    //remove string escape
     let mut last = None;
-    let mut new_data =String::new();
+    let mut new_data = String::new();
     for x in string_data.chars() {
         if last != Some('\\') && (x == '\'' || x == '"') {
-            if string_start{
+            if string_start {
                 string_start = false;
-            }else{
+            } else {
                 string_start = true;
             }
-            last=Some(x);
+            last = Some(x);
             new_data.push('\"');
             continue;
         }
-        if string_start==false{
-             if x=='\''{
-                 new_data.push_str("\"");
-                 last=Some(x);
-                 continue;
-             }
+        if string_start == false {
+            if x == '\'' {
+                new_data.push_str("\"");
+                last = Some(x);
+                continue;
+            }
         }
         new_data.push(x);
-        last=Some(x);
+        last = Some(x);
         continue;
     }
-    string_data=new_data;
+    string_data = new_data;
     //as
     string_data = string_data.replace(".as_i32()", ".as_i64().unwrap_or(0)");
     string_data = string_data.replace(".as_i64()", ".as_i64().unwrap_or(0)");
