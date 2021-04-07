@@ -1,7 +1,7 @@
 #![allow(unused_assignments)]
 extern crate proc_macro;
 
-use syn::{parse_macro_input, AttributeArgs, ItemFn};
+use syn::{AttributeArgs, ItemFn};
 use crate::proc_macro::TokenStream;
 
 mod func;

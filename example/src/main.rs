@@ -13,14 +13,14 @@ fn main() {
 //                   if @.name.str() != '':
 //                     and name=#{@.name}")]
 
-#[expr("@['a']['b'].i64() != &null")]
+#[expr("@.a.b.str_owned()+'fuck'")]
 pub fn gen(arg: &serde_json::Value) -> rexpr::error::Result<serde_json::Value> {}
 
 #[test]
 fn it_works() {
     let arg = serde_json::json!({
         "a":{
-            "b":8
+            "b":"8"
         }
     });
     let v = gen(&arg);
