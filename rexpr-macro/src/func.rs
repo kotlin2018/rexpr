@@ -122,7 +122,10 @@ pub(crate) fn impl_fn(f: &ItemFn, args: crate::proc_macro::TokenStream) -> Token
     }
     let t = t.unwrap();
     println!("gen expr: {}", t.to_token_stream());
-    return quote!(pub fn gen(arg:&serde_json::Value) -> rexpr::error::Result<serde_json::Value> {
+
+
+    let func_name_ident = f.sig.ident.to_token_stream();
+    return quote!(pub fn #func_name_ident(arg:&serde_json::Value) -> rexpr::error::Result<serde_json::Value> {
                      return Ok(serde_json::json!(#t));
                   })
         .to_token_stream().into();

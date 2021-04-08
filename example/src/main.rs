@@ -13,13 +13,14 @@ fn main() {
 //                   if @.name.str() != '':
 //                     and name=#{@.name}")]
 
-#[expr("@.a.b.string()+'fuck'")]
+#[expr("@.a.arr")]
 pub fn gen(arg: &serde_json::Value) -> rexpr::error::Result<serde_json::Value> {}
 
 #[test]
 fn it_works() {
     let arg = serde_json::json!({
         "a":{
+            "arr":[1,2,3],
             "b":"8"
         }
     });
