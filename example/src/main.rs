@@ -28,7 +28,6 @@ fn it_works() {
     println!("{}", v.unwrap());
 }
 
-//cargo.exe test --release --color=always --bin example bench --no-fail-fast --manifest-path E:\rust_project\rexpr\example\Cargo.toml --  --exact -Z unstable-options --show-output
 #[test]
 fn bench() {
     let arg = serde_json::json!({
