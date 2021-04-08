@@ -117,13 +117,18 @@ pub(crate) fn impl_fn(f: &ItemFn, args: crate::proc_macro::TokenStream) -> Token
     string_data = string_data.replace(".bool()", ".as_bool().unwrap_or(false)");
     string_data = string_data.replace(".string()", ".as_str().unwrap_or(\"\").to_string()");
 
-    println!("string_data:{}", string_data);
     //let s = syn::parse_str::<syn::LitStr>(&string_data).unwrap();
-    let t = syn::parse_str::<Expr>(&string_data).unwrap();
-    let exprs = t.to_token_stream();
+    let t = syn::parse_str::<Expr>(&string_data);
+    if t.is_err() {
+        panic!("[rexpr]syn::parse_str fail for: {}", t.err().unwrap().to_string())
+    }
+    let t = t.unwrap();
+    println!("gen expr: {}", t.to_token_stream());
     return quote!(pub fn gen(arg:&serde_json::Value) -> rexpr::error::Result<serde_json::Value> {
-                      let v=#t;
-                     return Ok(serde_json::json!(#exprs));
+                     let f={
+                         #t
+                     };
+                     return Ok(serde_json::json!(f));
                   })
         .to_token_stream().into();
 }
