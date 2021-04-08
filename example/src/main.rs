@@ -13,7 +13,7 @@ fn main() {
 //                   if @.name.str() != '':
 //                     and name=#{@.name}")]
 
-#[expr("@.a.arr")]
+#[expr("@.a.b.string()+'f'+'f'+'f'+'f'+'f'+'f'+'f'+'f'+'f'+'f'+'f'+'f'+'f'+'f'+'f'+'f'+'f'+'f'+'f'+'f'+'f'+'f'+'f'+'f'+'f'+'f'+'f'+'f'+'f'+'f'+'f'+'f'+'f'+'f'+'f'+'f'+'f'")]
 pub fn gen(arg: &serde_json::Value) -> rexpr::error::Result<serde_json::Value> {}
 
 #[test]
@@ -27,3 +27,18 @@ fn it_works() {
     let v = gen(&arg);
     println!("{}", v.unwrap());
 }
+
+#[test]
+fn bench() {
+    let arg = serde_json::json!({
+        "a":{
+            "arr":[1,2,3],
+            "b":"8"
+        }
+    });
+    gen(&arg);
+    bench!(100000,{
+       gen(&arg);
+    });
+}
+
