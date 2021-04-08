@@ -121,7 +121,7 @@ pub(crate) fn impl_fn(f: &ItemFn, args: crate::proc_macro::TokenStream) -> Token
         panic!("[rexpr]syn::parse_str fail for: {}", t.err().unwrap().to_string())
     }
     let t = t.unwrap();
-    println!("gen expr: {}", t.to_token_stream());
+    println!("[rexpr] gen expr: {}", t.to_token_stream());
 
 
     let func_name_ident = f.sig.ident.to_token_stream();
