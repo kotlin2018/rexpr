@@ -1,9 +1,7 @@
-use proc_macro2::{Ident, Span};
 use quote::quote;
 use quote::ToTokens;
 use syn;
-use syn::{AttributeArgs, DeriveInput, Expr, ItemFn, parse_macro_input};
-use syn::parse::{Parse, ParseStream};
+use syn::{Expr, ItemFn};
 
 use crate::proc_macro::TokenStream;
 
