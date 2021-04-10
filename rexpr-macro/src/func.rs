@@ -1,7 +1,7 @@
 use quote::quote;
 use quote::ToTokens;
 use syn;
-use syn::{Expr, ItemFn};
+use syn::{Expr, ItemFn, ExprPath};
 
 use crate::proc_macro::TokenStream;
 use std::any::Any;
@@ -25,9 +25,6 @@ fn is_name_char(arg: char) -> bool {
 pub(crate) fn impl_fn(f: &ItemFn, args: crate::proc_macro::TokenStream) -> TokenStream {
     let mut string_data = args.to_string();
     string_data = string_data[1..string_data.len() - 1].to_string();
-    string_data = string_data.replace("null", "serde_json::Value::Null");
-
-
     let t = syn::parse_str::<Expr>(&string_data);
     if t.is_err() {
         panic!("[rexpr]syn::parse_str fail for: {}", t.err().unwrap().to_string())
@@ -142,7 +139,11 @@ pub(crate) fn impl_fn(f: &ItemFn, args: crate::proc_macro::TokenStream) -> Token
     let func_name_ident = f.sig.ident.to_token_stream();
     let mut return_ty = f.sig.output.to_token_stream();
     return quote!(pub fn #func_name_ident(#func_args)  #return_ty {
-                     return Ok(serde_json::json!(#t));
+                     let result=#t;
+                     if result.eq(&serde_json::Value::Null){
+                      return Ok(serde_json::Value::Null);
+                     }
+                     return Ok(serde_json::json!(result));
                   })
         .to_token_stream().into();
 }
@@ -150,7 +151,10 @@ pub(crate) fn impl_fn(f: &ItemFn, args: crate::proc_macro::TokenStream) -> Token
 fn convert_to_arg_access(arg: Expr) -> Expr {
     match arg {
         Expr::Path(b) => {
-            //println!("[rexpr]Path:{}", p.to_token_stream());
+            if b.to_token_stream().to_string().trim() == "null" {
+                return syn::parse_str::<Expr>("serde_json::Value::Null").unwrap();
+            }
+            println!("[rexpr]Path:{}", b.to_token_stream());
             return syn::parse_str::<Expr>(&format!("arg.{}", b.to_token_stream())).unwrap();
         }
         Expr::MethodCall(b) => {
