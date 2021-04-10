@@ -44,13 +44,26 @@ pub(crate) fn impl_fn(f: &ItemFn, args: crate::proc_macro::TokenStream) -> Token
     string_data = string_data.replace(".as_str()", ".as_str().unwrap_or(\"\")");
     string_data = string_data.replace(".as_bool()", ".as_bool().unwrap_or(false)");
 
+
     string_data = string_data.replace(".i32()", ".as_i64().unwrap_or(0)");
     string_data = string_data.replace(".i64()", ".as_i64().unwrap_or(0)");
     string_data = string_data.replace(".f64()", ".as_f64().unwrap_or(0.0)");
     string_data = string_data.replace(".str()", ".as_str().unwrap_or(\"\")");
     string_data = string_data.replace(".bool()", ".as_bool().unwrap_or(false)");
     string_data = string_data.replace(".string()", ".to_string()");
-    string_data = string_data.replace("'", "\"");
+    //convert string define
+    let mut last_char = '_';
+    let mut string_data_new = String::new();
+    for x in string_data.chars() {
+        if x == '\'' && last_char != '\\' {
+            string_data_new.push('\"');
+        } else {
+            string_data_new.push(x);
+        }
+        last_char = x;
+    }
+    string_data = string_data_new;
+
 
     let t = syn::parse_str::<Expr>(&string_data);
     if t.is_err() {
@@ -61,85 +74,86 @@ pub(crate) fn impl_fn(f: &ItemFn, args: crate::proc_macro::TokenStream) -> Token
     let mut t = t.unwrap();
     t = convert_to_arg_access(t);
     string_data = t.to_token_stream().to_string();
-    string_data = string_data.replace("expr_arg", "@").replace(" . ", ".");
-    println!("[rexpr]expr:{}", string_data);
+    string_data = string_data.replace(" . ", ".");
 
-    //access field convert
-    let mut ats = vec![];
-    let mut at = false;
-    let mut string_start = false;
-    let mut last = None;
-    for x in string_data.chars() {
-        if last != Some('\\') && (x == '\'' || x == '"') {
-            if string_start {
-                string_start = false;
-            } else {
-                string_start = true;
-            }
-            last = Some(x);
-            continue;
-        }
-        if string_start == false {
-            if x == '@' {
-                at = true;
-                ats.push(x.to_string());
-                continue;
-            }
-            if at {
-                if is_name_char(x) || x == '(' || x == ')' {
-                    ats.last_mut().unwrap().push(x);
-                } else {
-                    at = false;
-                }
-            }
-        }
-    }
-    for at in ats {
-        let mut new_at = String::new();
-        let items: Vec<&str> = at.split(".").collect();
-        let mut at_start = false;
-        for x in items {
-            if x == "@" {
-                new_at.push_str("arg");
-                at_start = true;
-            } else if x.ends_with("()") {
-                //method
-                at_start = false;
-                new_at.push_str(".");
-                new_at.push_str(x);
-            } else {
-                if at_start {
-                    new_at.push_str("[\"");
-                    new_at.push_str(x);
-                    new_at.push_str("\"]");
-                }
-            }
-        }
-        string_data = string_data.replace(&at, &new_at);
-    }
 
-    //remove string escape
-    let mut last = None;
-    let mut new_data = String::new();
-    for x in string_data.chars() {
-        if last.ne(&Some('\\')) && (x == '\'' || x == '"') {
-            if string_start {
-                string_start = false;
-            } else {
-                string_start = true;
-            }
-            last = Some(x);
-            new_data.push('\"');
-            continue;
-        }
-        new_data.push(x);
-        last = Some(x);
-        continue;
-    }
-    string_data = new_data;
+    // //access field convert
+    // let mut ats = vec![];
+    // let mut at = false;
+    // let mut string_start = false;
+    // let mut last = None;
+    // for x in string_data.chars() {
+    //     if last != Some('\\') && (x == '\'' || x == '"') {
+    //         if string_start {
+    //             string_start = false;
+    //         } else {
+    //             string_start = true;
+    //         }
+    //         last = Some(x);
+    //         continue;
+    //     }
+    //     if string_start == false {
+    //         if x == '@' {
+    //             at = true;
+    //             ats.push(x.to_string());
+    //             continue;
+    //         }
+    //         if at {
+    //             if is_name_char(x) || x == '(' || x == ')' {
+    //                 ats.last_mut().unwrap().push(x);
+    //             } else {
+    //                 at = false;
+    //             }
+    //         }
+    //     }
+    // }
+    // for at in ats {
+    //     let mut new_at = String::new();
+    //     let items: Vec<&str> = at.split(".").collect();
+    //     let mut at_start = false;
+    //     for x in items {
+    //         if x == "@" {
+    //             new_at.push_str("arg");
+    //             at_start = true;
+    //         } else if x.ends_with("()") {
+    //             //method
+    //             at_start = false;
+    //             new_at.push_str(".");
+    //             new_at.push_str(x);
+    //         } else {
+    //             if at_start {
+    //                 new_at.push_str("[\"");
+    //                 new_at.push_str(x);
+    //                 new_at.push_str("\"]");
+    //             }
+    //         }
+    //     }
+    //     string_data = string_data.replace(&at, &new_at);
+    // }
+    //
+    // //remove string escape
+    // let mut last = None;
+    // let mut new_data = String::new();
+    // for x in string_data.chars() {
+    //     if last.ne(&Some('\\')) && (x == '\'' || x == '"') {
+    //         if string_start {
+    //             string_start = false;
+    //         } else {
+    //             string_start = true;
+    //         }
+    //         last = Some(x);
+    //         new_data.push('\"');
+    //         continue;
+    //     }
+    //     new_data.push(x);
+    //     last = Some(x);
+    //     continue;
+    // }
+    // string_data = new_data;
     //as
 
     //let s = syn::parse_str::<syn::LitStr>(&string_data).unwrap();
+    println!("[rexpr]expr:{}", string_data);
     let t = syn::parse_str::<Expr>(&string_data);
     if t.is_err() {
         panic!("[rexpr]syn::parse_str fail for: {}", t.err().unwrap().to_string())
@@ -169,14 +183,17 @@ fn convert_to_arg_access(arg: Expr) -> Expr {
             if b.to_token_stream().to_string().trim() == "null" {
                 return syn::parse_str::<Expr>("serde_json::Value::Null").unwrap();
             }
-            return syn::parse_str::<Expr>(&format!("expr_arg.{}", b.to_token_stream())).unwrap();
+            //println!("Path:{}", b.to_token_stream());
+            return syn::parse_str::<Expr>(&format!("arg[\"{}\"]", b.to_token_stream().to_string().trim())).unwrap();
         }
-        Expr::MethodCall(b) => {
+        Expr::MethodCall(mut b) => {
             let ex = *(b.receiver.clone());
             let s = ex.to_token_stream().to_string();
             for x in s.chars() {
                 if is_param_char(x) {
-                    return syn::parse_str::<Expr>(&format!("expr_arg.{}", b.to_token_stream())).unwrap();
+                    //println!("re:{},Type:{}", s, expr_type_box(&b.receiver));
+                    b.receiver = Box::new(convert_to_arg_access(*b.receiver.clone()));
+                    return Expr::MethodCall(b);
                 }
                 break;
             }
@@ -191,24 +208,47 @@ fn convert_to_arg_access(arg: Expr) -> Expr {
             b.expr = Box::new(convert_to_arg_access(*b.expr.clone()));
             return Expr::Unary(b);
         }
-        Expr::Field(b) => {
+        Expr::Field(mut b) => {
+            //println!("field:{}",b.to_token_stream());
             return match b.member.clone() {
                 Member::Named(named) => {
-                    return syn::parse_str::<Expr>(&format!("expr_arg.{}", b.to_token_stream())).unwrap();
+                    let s = b.to_token_stream().to_string();
+                    let vs: Vec<&str> = s.split(".").collect();
+                    let mut token = String::new();
+                    for x in vs {
+                        if x.ends_with("()") {
+                            token.push_str(".");
+                            token.push_str(x.trim());
+                        } else {
+                            token.push_str("[\"");
+                            token.push_str(x.trim());
+                            token.push_str("\"]");
+                        }
+                    }
+                    return syn::parse_str::<Expr>(&format!("arg{}", token)).unwrap();
                 }
                 Member::Unnamed(unamed) => {
                     return Expr::Field(b);
                 }
             };
         }
-        Expr::Reference(mut b)=>{
+        Expr::Reference(mut b) => {
             b.expr = Box::new(convert_to_arg_access(*b.expr.clone()));
             return Expr::Reference(b);
         }
+        Expr::Index(mut b) => {
+            b.expr = Box::new(convert_to_arg_access(*b.expr.clone()));
+            return Expr::Index(b);
+        }
         _ => {
+            println!("_def:{:?}", expr_type(arg.clone()));
             return arg;
         }
     }
+}
+
+fn expr_type_box(expr: &Box<Expr>) -> String {
+    expr_type(*expr.clone())
 }
 
 fn expr_type(expr: Expr) -> String {

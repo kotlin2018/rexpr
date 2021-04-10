@@ -13,7 +13,7 @@ fn main() {
 //                   if name.str() != '':
 //                     and name=#{name}")]
 
-#[expr("&a.b")]
+#[expr("a.arr[0].i32()+2")]
 pub fn gen(arg: &serde_json::Value) -> rexpr::error::Result<serde_json::Value> {}
 
 #[test]
