@@ -57,12 +57,6 @@ fn test_node_run() {
         "e":[1],
         "f":[{"field":1}]
          });
-    let exec_expr = |arg: &serde_json::Value, expr: &str| -> serde_json::Value {
-        println!("{}", expr);
-        let v = runtime.eval(expr, arg).unwrap();
-        println!("'{}' -> {}", expr, &v);
-        v
-    };
     #[expr("-1 == -a.i32()")]
     pub fn fff(arg: &serde_json::Value) -> rexpr::error::Result<serde_json::Value> {}
     assert_eq!(fff(&arg).unwrap(), json!(true));
