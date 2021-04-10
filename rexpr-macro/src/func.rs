@@ -22,9 +22,36 @@ fn is_name_char(arg: char) -> bool {
     return false;
 }
 
+fn is_param_char(arg: char) -> bool {
+    match arg {
+        'a' | 'b' | 'c' | 'd' | 'e' | 'f' | 'g' | 'h' | 'i' | 'j' | 'k' | 'l' | 'm' | 'n' | 'o' | 'p' | 'q' | 'r' | 's' | 't' | 'u' | 'v' | 'w' | 'x' | 'y' | 'z' |
+        'A' | 'B' | 'C' | 'D' | 'E' | 'F' | 'G' | 'H' | 'I' | 'J' | 'K' | 'L' | 'M' | 'N' | 'O' | 'P' | 'Q' | 'R' | 'S' | 'T' | 'U' | 'V' | 'W' | 'X' | 'Y' | 'Z'
+        => {
+            return true;
+        }
+        _ => {}
+    }
+    return false;
+}
+
 pub(crate) fn impl_fn(f: &ItemFn, args: crate::proc_macro::TokenStream) -> TokenStream {
     let mut string_data = args.to_string();
     string_data = string_data[1..string_data.len() - 1].to_string();
+
+    string_data = string_data.replace(".as_i32()", ".as_i64().unwrap_or(0)");
+    string_data = string_data.replace(".as_i64()", ".as_i64().unwrap_or(0)");
+    string_data = string_data.replace(".as_f64()", ".as_f64().unwrap_or(0.0)");
+    string_data = string_data.replace(".as_str()", ".as_str().unwrap_or(\"\")");
+    string_data = string_data.replace(".as_bool()", ".as_bool().unwrap_or(false)");
+
+    string_data = string_data.replace(".i32()", ".as_i64().unwrap_or(0)");
+    string_data = string_data.replace(".i64()", ".as_i64().unwrap_or(0)");
+    string_data = string_data.replace(".f64()", ".as_f64().unwrap_or(0.0)");
+    string_data = string_data.replace(".str()", ".as_str().unwrap_or(\"\")");
+    string_data = string_data.replace(".bool()", ".as_bool().unwrap_or(false)");
+    string_data = string_data.replace(".string()", ".to_string()");
+    string_data = string_data.replace("'", "\"");
+
     let t = syn::parse_str::<Expr>(&string_data);
     if t.is_err() {
         panic!("[rexpr]syn::parse_str fail for: {}", t.err().unwrap().to_string())
@@ -111,18 +138,6 @@ pub(crate) fn impl_fn(f: &ItemFn, args: crate::proc_macro::TokenStream) -> Token
     }
     string_data = new_data;
     //as
-    string_data = string_data.replace(".as_i32()", ".as_i64().unwrap_or(0)");
-    string_data = string_data.replace(".as_i64()", ".as_i64().unwrap_or(0)");
-    string_data = string_data.replace(".as_f64()", ".as_f64().unwrap_or(0.0)");
-    string_data = string_data.replace(".as_str()", ".as_str().unwrap_or(\"\")");
-    string_data = string_data.replace(".as_bool()", ".as_bool().unwrap_or(false)");
-
-    string_data = string_data.replace(".i32()", ".as_i64().unwrap_or(0)");
-    string_data = string_data.replace(".i64()", ".as_i64().unwrap_or(0)");
-    string_data = string_data.replace(".f64()", ".as_f64().unwrap_or(0.0)");
-    string_data = string_data.replace(".str()", ".as_str().unwrap_or(\"\")");
-    string_data = string_data.replace(".bool()", ".as_bool().unwrap_or(false)");
-    string_data = string_data.replace(".string()", ".as_str().unwrap_or(\"\").to_string()");
 
     //let s = syn::parse_str::<syn::LitStr>(&string_data).unwrap();
     let t = syn::parse_str::<Expr>(&string_data);
@@ -158,14 +173,15 @@ fn convert_to_arg_access(arg: Expr) -> Expr {
             return syn::parse_str::<Expr>(&format!("expr_arg.{}", b.to_token_stream())).unwrap();
         }
         Expr::MethodCall(b) => {
-            match *b.receiver.clone() {
-                Expr::Path(pp) => {
-                    println!("[rexpr]MethodCall:{}", pp.to_token_stream());
-                    //return syn::parse_str::<Expr>(&format!("expr_arg.{}", b.to_token_stream())).unwrap();
+            let ex = *(b.receiver.clone());
+            let s = ex.to_token_stream().to_string();
+            for x in s.chars() {
+                if is_param_char(x) {
+                    return syn::parse_str::<Expr>(&format!("expr_arg.{}", b.to_token_stream())).unwrap();
                 }
-                _ => {}
+                break;
             }
-            return syn::parse_str::<Expr>(&format!("expr_arg.{}", b.to_token_stream())).unwrap();
+            return Expr::MethodCall(b);
         }
         Expr::Binary(mut b) => {
             b.left = Box::new(convert_to_arg_access(*b.left.clone()));
