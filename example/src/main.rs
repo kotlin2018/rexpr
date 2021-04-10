@@ -14,7 +14,7 @@ fn main() {
 //                   if name.str() != '':
 //                     and name=#{name}")]
 
-#[expr("a.arr[0].i32()+2")]
+#[expr("null")]
 pub fn gen(arg: &serde_json::Value) -> rexpr::error::Result<serde_json::Value> {}
 
 #[test]
