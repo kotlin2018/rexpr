@@ -169,7 +169,6 @@ fn convert_to_arg_access(arg: Expr) -> Expr {
             if b.to_token_stream().to_string().trim() == "null" {
                 return syn::parse_str::<Expr>("serde_json::Value::Null").unwrap();
             }
-            println!("[rexpr]Path:{}", b.to_token_stream());
             return syn::parse_str::<Expr>(&format!("expr_arg.{}", b.to_token_stream())).unwrap();
         }
         Expr::MethodCall(b) => {
