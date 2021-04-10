@@ -202,6 +202,10 @@ fn convert_to_arg_access(arg: Expr) -> Expr {
                 }
             };
         }
+        Expr::Reference(mut b)=>{
+            b.expr = Box::new(convert_to_arg_access(*b.expr.clone()));
+            return Expr::Reference(b);
+        }
         _ => {
             return arg;
         }
