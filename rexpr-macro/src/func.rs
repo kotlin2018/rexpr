@@ -4,6 +4,8 @@ use syn;
 use syn::{Expr, ItemFn};
 
 use crate::proc_macro::TokenStream;
+use std::any::Any;
+use syn::spanned::Spanned;
 
 fn is_name_char(arg: char) -> bool {
     match arg {
@@ -25,6 +27,18 @@ pub(crate) fn impl_fn(f: &ItemFn, args: crate::proc_macro::TokenStream) -> Token
     string_data = string_data[1..string_data.len() - 1].to_string();
     string_data = string_data.replace("null", "serde_json::Value::Null");
 
+
+    let t = syn::parse_str::<Expr>(&string_data);
+    if t.is_err() {
+        panic!("[rexpr]syn::parse_str fail for: {}", t.err().unwrap().to_string())
+    } else {
+        println!("[rexpr]parse expr:{} success!", string_data);
+    }
+    let mut t = t.unwrap();
+    t = convert_to_arg_access(t);
+    string_data = t.to_token_stream().to_string();
+    string_data = string_data.replace("arg", "@").replace(" . ", ".");
+    println!("[rexpr]expr:{}", string_data);
 
     //access field convert
     let mut ats = vec![];
@@ -58,7 +72,6 @@ pub(crate) fn impl_fn(f: &ItemFn, args: crate::proc_macro::TokenStream) -> Token
     }
     for at in ats {
         let mut new_at = String::new();
-
         let items: Vec<&str> = at.split(".").collect();
         let mut at_start = false;
         for x in items {
@@ -80,7 +93,6 @@ pub(crate) fn impl_fn(f: &ItemFn, args: crate::proc_macro::TokenStream) -> Token
         }
         string_data = string_data.replace(&at, &new_at);
     }
-
 
     //remove string escape
     let mut last = None;
@@ -119,16 +131,49 @@ pub(crate) fn impl_fn(f: &ItemFn, args: crate::proc_macro::TokenStream) -> Token
     let t = syn::parse_str::<Expr>(&string_data);
     if t.is_err() {
         panic!("[rexpr]syn::parse_str fail for: {}", t.err().unwrap().to_string())
+    } else {
+        println!("[rexpr]parse expr:{} success!", string_data);
     }
-    let t = t.unwrap();
-    println!("[rexpr] gen expr: {}", t.to_token_stream());
+    let mut t = t.unwrap();
+    //t = convert_to_arg_access(t);
 
-
-    let func_args=f.sig.inputs.to_token_stream();
+    println!("[rexpr]gen expr: {}", t.to_token_stream());
+    let func_args = f.sig.inputs.to_token_stream();
     let func_name_ident = f.sig.ident.to_token_stream();
     let mut return_ty = f.sig.output.to_token_stream();
     return quote!(pub fn #func_name_ident(#func_args)  #return_ty {
                      return Ok(serde_json::json!(#t));
                   })
         .to_token_stream().into();
+}
+
+fn convert_to_arg_access(arg: Expr) -> Expr {
+    match arg {
+        Expr::Path(b) => {
+            //println!("[rexpr]Path:{}", p.to_token_stream());
+            return syn::parse_str::<Expr>(&format!("arg.{}", b.to_token_stream())).unwrap();
+        }
+        Expr::MethodCall(b) => {
+            // println!("[rexpr]MethodCall:{}", &b.receiver);
+            match *b.receiver.clone() {
+                Expr::Path(pp) => {
+                    println!("[rexpr]MethodCall:{}", pp.to_token_stream());
+                    //return syn::parse_str::<Expr>(&format!("arg.{}", b.to_token_stream())).unwrap();
+                }
+                _ => {}
+            }
+            return syn::parse_str::<Expr>(&format!("arg.{}", b.to_token_stream())).unwrap();
+        }
+        Expr::Binary(mut b) => {
+            //println!("[rexpr]Binary:{}", b.to_token_stream());
+            //println!("[rexpr]BinaryLeft:{}", b.left.to_token_stream());
+            //println!("[rexpr]Binary:{}", b.right.to_token_stream());
+            b.left = Box::new(convert_to_arg_access(*b.left.clone()));
+            b.right = Box::new(convert_to_arg_access(*b.right.clone()));
+            return Expr::Binary(b);
+        }
+        _ => {
+            return arg;
+        }
+    }
 }

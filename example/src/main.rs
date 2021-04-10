@@ -10,10 +10,10 @@ fn main() {
 }
 
 // #[py_sql(   "select * from biz_activity where delete_flag = 0
-//                   if @.name.str() != '':
-//                     and name=#{@.name}")]
+//                   if name.str() != '':
+//                     and name=#{name}")]
 
-#[expr("@.a.b.string()+'f'+'f'+'f'+'f'+'f'+'f'+'f'+'f'+'f'+'f'+'f'+'f'+'f'+'f'+'f'+'f'+'f'+'f'+'f'+'f'+'f'+'f'+'f'+'f'+'f'+'f'+'f'+'f'+'f'+'f'+'f'+'f'+'f'+'f'+'f'+'f'+'f'")]
+#[expr("a.arr[0].i32()+6")]
 pub fn gen(arg: &serde_json::Value) -> rexpr::error::Result<serde_json::Value> {}
 
 #[test]
