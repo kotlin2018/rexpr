@@ -1,7 +1,7 @@
 use quote::quote;
 use quote::ToTokens;
 use syn;
-use syn::{Expr, ItemFn, ExprPath};
+use syn::{Expr, ItemFn, ExprPath, Member};
 
 use crate::proc_macro::TokenStream;
 use std::any::Any;
@@ -34,7 +34,7 @@ pub(crate) fn impl_fn(f: &ItemFn, args: crate::proc_macro::TokenStream) -> Token
     let mut t = t.unwrap();
     t = convert_to_arg_access(t);
     string_data = t.to_token_stream().to_string();
-    string_data = string_data.replace("arg", "@").replace(" . ", ".");
+    string_data = string_data.replace("expr_arg", "@").replace(" . ", ".");
     println!("[rexpr]expr:{}", string_data);
 
     //access field convert
@@ -155,23 +155,19 @@ fn convert_to_arg_access(arg: Expr) -> Expr {
                 return syn::parse_str::<Expr>("serde_json::Value::Null").unwrap();
             }
             println!("[rexpr]Path:{}", b.to_token_stream());
-            return syn::parse_str::<Expr>(&format!("arg.{}", b.to_token_stream())).unwrap();
+            return syn::parse_str::<Expr>(&format!("expr_arg.{}", b.to_token_stream())).unwrap();
         }
         Expr::MethodCall(b) => {
-            // println!("[rexpr]MethodCall:{}", &b.receiver);
             match *b.receiver.clone() {
                 Expr::Path(pp) => {
                     println!("[rexpr]MethodCall:{}", pp.to_token_stream());
-                    //return syn::parse_str::<Expr>(&format!("arg.{}", b.to_token_stream())).unwrap();
+                    //return syn::parse_str::<Expr>(&format!("expr_arg.{}", b.to_token_stream())).unwrap();
                 }
                 _ => {}
             }
-            return syn::parse_str::<Expr>(&format!("arg.{}", b.to_token_stream())).unwrap();
+            return syn::parse_str::<Expr>(&format!("expr_arg.{}", b.to_token_stream())).unwrap();
         }
         Expr::Binary(mut b) => {
-            //println!("[rexpr]Binary:{}", b.to_token_stream());
-            //println!("[rexpr]BinaryLeft:{}", b.left.to_token_stream());
-            //println!("[rexpr]Binary:{}", b.right.to_token_stream());
             b.left = Box::new(convert_to_arg_access(*b.left.clone()));
             b.right = Box::new(convert_to_arg_access(*b.right.clone()));
             return Expr::Binary(b);
@@ -180,8 +176,64 @@ fn convert_to_arg_access(arg: Expr) -> Expr {
             b.expr = Box::new(convert_to_arg_access(*b.expr.clone()));
             return Expr::Unary(b);
         }
+        Expr::Field(b) => {
+            return match b.member.clone() {
+                Member::Named(named) => {
+                    return syn::parse_str::<Expr>(&format!("expr_arg.{}", b.to_token_stream())).unwrap();
+                }
+                Member::Unnamed(unamed) => {
+                    return Expr::Field(b);
+                }
+            };
+        }
         _ => {
             return arg;
         }
+    }
+}
+
+fn expr_type(expr: Expr) -> String {
+    match expr {
+        Expr::Array(_) => { format!("Array") }
+        Expr::Assign(_) => { format!("Assign") }
+        Expr::AssignOp(_) => { format!("AssignOp") }
+        Expr::Async(_) => { format!("Async") }
+        Expr::Await(_) => { format!("Await") }
+        Expr::Binary(_) => { format!("Binary") }
+        Expr::Block(_) => { format!("Block") }
+        Expr::Box(_) => { format!("Box") }
+        Expr::Break(_) => { format!("Break") }
+        Expr::Call(_) => { format!("Call") }
+        Expr::Cast(_) => { format!("Cast") }
+        Expr::Closure(_) => { format!("Closure") }
+        Expr::Continue(_) => { format!("Continue") }
+        Expr::Field(_) => { format!("Field") }
+        Expr::ForLoop(_) => { format!("ForLoop") }
+        Expr::Group(_) => { format!("Group") }
+        Expr::If(_) => { format!("If") }
+        Expr::Index(_) => { format!("Index") }
+        Expr::Let(_) => { format!("Let") }
+        Expr::Lit(_) => { format!("Lit") }
+        Expr::Loop(_) => { format!("Loop") }
+        Expr::Macro(_) => { format!("Macro") }
+        Expr::Match(_) => { format!("Match") }
+        Expr::MethodCall(_) => { format!("MethodCall") }
+        Expr::Paren(_) => { format!("Paren") }
+        Expr::Path(_) => { format!("Path") }
+        Expr::Range(_) => { format!("Range") }
+        Expr::Reference(_) => { format!("Reference") }
+        Expr::Repeat(_) => { format!("Repeat") }
+        Expr::Return(_) => { format!("Return") }
+        Expr::Struct(_) => { format!("Struct") }
+        Expr::Try(_) => { format!("Try") }
+        Expr::TryBlock(_) => { format!("TryBlock") }
+        Expr::Tuple(_) => { format!("Tuple") }
+        Expr::Type(_) => { format!("Type") }
+        Expr::Unary(_) => { format!("Unary") }
+        Expr::Unsafe(_) => { format!("Unsafe") }
+        Expr::Verbatim(_) => { format!("Verbatim") }
+        Expr::While(_) => { format!("While") }
+        Expr::Yield(_) => { format!("Yield") }
+        Expr::__TestExhaustive(_) => { format!("__TestExhaustive") }
     }
 }

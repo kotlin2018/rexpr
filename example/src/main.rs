@@ -13,7 +13,7 @@ fn main() {
 //                   if name.str() != '':
 //                     and name=#{name}")]
 
-#[expr("a == null")]
+#[expr("a.b == '8'")]
 pub fn gen(arg: &serde_json::Value) -> rexpr::error::Result<serde_json::Value> {}
 
 #[test]
@@ -21,7 +21,8 @@ fn it_works() {
     let arg = serde_json::json!({
         "a":{
             "arr":[1,2,3],
-            "b":"8"
+            "b":"8",
+            "c": true,
         }
     });
     let v = gen(&arg);
