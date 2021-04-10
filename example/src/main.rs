@@ -13,7 +13,7 @@ fn main() {
 //                   if name.str() != '':
 //                     and name=#{name}")]
 
-#[expr("a.arr[0].i32()+6")]
+#[expr("!a.c.bool()")]
 pub fn gen(arg: &serde_json::Value) -> rexpr::error::Result<serde_json::Value> {}
 
 #[test]
@@ -33,7 +33,8 @@ fn bench() {
     let arg = serde_json::json!({
         "a":{
             "arr":[1,2,3],
-            "b":"8"
+            "b":"8",
+            "c":true
         }
     });
     gen(&arg);

@@ -172,6 +172,10 @@ fn convert_to_arg_access(arg: Expr) -> Expr {
             b.right = Box::new(convert_to_arg_access(*b.right.clone()));
             return Expr::Binary(b);
         }
+        Expr::Unary(mut b) => {
+            b.expr = Box::new(convert_to_arg_access(*b.expr.clone()));
+            return Expr::Unary(b);
+        }
         _ => {
             return arg;
         }
