@@ -1,7 +1,6 @@
 [workspace]
 members = [
     ".",
-    "rexpr-macro",
     "example"
 ]
 
@@ -18,7 +17,7 @@ license = "Apache-2.0"
 
 [features]
 default = []
-debug_mode=["rexpr-macro/debug_mode"]
+debug_mode=[]
 
 
 [dependencies]
@@ -27,5 +26,3 @@ debug_mode=["rexpr-macro/debug_mode"]
 serde = { version = "1", features = ["derive"] }
 serde_json = { version = "1" }
 dashmap = { version = "4" }
-
-rexpr-macro={version="0.1.0",path="rexpr-macro"}
